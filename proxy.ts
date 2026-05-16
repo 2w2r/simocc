@@ -9,12 +9,13 @@ export async function proxy(request: NextRequest) {
   })
 
   if (!session) {
-    return NextResponse.redirect(new URL("/", request.url))
+    return NextResponse.redirect(new URL("/sign-in", request.url))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: []
+  // Exclude all non-public routes to cover (ops) until e.g. subdomain is implemented
+  matcher: ["/((?!$|sign-in|sign-up|api|_next/static|_next/image|favicon.ico|manifest|icons).*)"],
 }
