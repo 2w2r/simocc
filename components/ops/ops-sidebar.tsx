@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
@@ -14,7 +15,12 @@ import {
 } from "@/components/ui/sidebar"
 import { OPSNAV } from "@/lib/constants"
 
-export function OpsSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function OpsSidebar({
+  navUser,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  navUser: React.ReactNode
+}) {
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       {/* TODO: user profile switcher in sidebar header */}
@@ -43,7 +49,7 @@ export function OpsSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
         {/* TODO: further sidebar groups */}
       </SidebarContent>
-      {/* TODO: user menu in sidebar footer */}
+      <SidebarFooter>{navUser}</SidebarFooter>
     </Sidebar>
   )
 }

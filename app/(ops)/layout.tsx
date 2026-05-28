@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 
 import { OpsBreadcrumb } from "@/components/ops/ops-breadcrumb"
+import { OpsNavUser } from "@/components/ops/ops-nav-user"
 import { OpsSidebar } from "@/components/ops/ops-sidebar"
 import { ModeToggle } from "@/components/ui/mode-toggle"
 import { Separator } from "@/components/ui/separator"
@@ -9,6 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { auth } from "@/lib/auth"
 import { APP_NAME } from "@/lib/constants"
 
 export const metadata: Metadata = {
@@ -18,14 +21,27 @@ export const metadata: Metadata = {
   },
 }
 
-export default function OpsLayout({
+export default async function OpsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
   return (
     <SidebarProvider>
-      <OpsSidebar />
+      <OpsSidebar
+        navUser={
+          <OpsNavUser
+            user={{
+              name: session?.user.name ?? "",
+              email: session?.user.email ?? "",
+              avatar: session?.user.image ?? "",
+            }}
+          />
+        }
+      />
       <SidebarInset className="min-w-px min-h-px">
         {/* HEADER */}
         <header className="flex justify-between h-16 shrink-0 items-center gap-2">
