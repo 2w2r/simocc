@@ -6,6 +6,13 @@ export const APP_NAME = "SIMOCC"
 export const APP_DESCRIPTION = "(Flight) Simulation Operations Control Centre"
 export const APP_URL = "https://simocc.com"
 
+// Auth form constants
+export const PASSWORD_MIN_LENGTH = 8
+export const PASSWORD_MAX_LENGTH = 64
+export const MIN_LOADING_DELAY_MS = 500 // 0.5 seconds
+export const AUTH_TIMEOUT_MS = 10000 // 10 seconds
+export const RESET_PASSWORD_TOKEN_EXPIRES_IN_S = 3600 // 1 hour
+
 // Types for OPSNAV items for sidebar sections and icons, url, and whether enabled
 type OpsNavItem = {
   title: string
