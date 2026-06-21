@@ -12,6 +12,7 @@ export const PASSWORD_MAX_LENGTH = 64
 export const MIN_LOADING_DELAY_MS = 500 // 0.5 seconds
 export const AUTH_TIMEOUT_MS = 10000 // 10 seconds
 export const RESET_PASSWORD_TOKEN_EXPIRES_IN_S = 3600 // 1 hour
+export const EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_S = 3600 // 1 hour
 
 // Types for OPSNAV items for sidebar sections and icons, url, and whether enabled
 type OpsNavItem = {
