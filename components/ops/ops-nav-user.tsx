@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation"
 
-import { ChevronsUpDown, LogOut, UserRound } from "lucide-react"
+import { ChevronsUpDown, LogOut, Settings, UserRound } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -63,9 +64,9 @@ export function OpsNavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-full rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-fit max-w-full rounded-lg"
             side={isMobile ? "bottom" : "bottom"}
-            align="end"
+            align="start"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
@@ -82,7 +83,15 @@ export function OpsNavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* TODO: User Account Menu */}
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <a href="/settings/account">
+                  <Settings />
+                  Settings
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
               variant="destructive"

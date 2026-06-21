@@ -14,8 +14,11 @@ import { APP_NAME } from "@/lib/constants"
 
 export function OpsBreadcrumb() {
   const pathname = usePathname()
-  const segment = pathname.split("/").pop() ?? "dashboard"
-  const label = segment.charAt(0).toUpperCase() + segment.slice(1)
+  const segments = pathname.split("/").filter(Boolean)
+  const isSettings = segments[0] === "settings"
+
+  const label = segments[segments.length - 1]
+  const pageLabel = label.charAt(0).toUpperCase() + label.slice(1)
 
   return (
     <Breadcrumb>
@@ -23,9 +26,17 @@ export function OpsBreadcrumb() {
         <BreadcrumbItem className="hidden md:block">
           <BreadcrumbLink href="/dashboard">{APP_NAME}</BreadcrumbLink>
         </BreadcrumbItem>
+        {isSettings && (
+          <>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="/settings">Settings</BreadcrumbLink>
+            </BreadcrumbItem>
+          </>
+        )}
         <BreadcrumbSeparator className="hidden md:block" />
         <BreadcrumbItem>
-          <BreadcrumbPage>{label}</BreadcrumbPage>
+          <BreadcrumbPage>{pageLabel}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

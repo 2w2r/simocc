@@ -30,7 +30,7 @@ export default async function OpsLayout({
     headers: await headers(),
   })
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-screen overflow-scroll">
       <OpsSidebar
         navUser={
           <OpsNavUser

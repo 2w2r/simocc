@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 
-import { LayoutGrid } from "lucide-react"
+import { LayoutGrid, UserRound } from "lucide-react"
 
 export const APP_NAME = "SIMOCC"
 export const APP_DESCRIPTION = "(Flight) Simulation Operations Control Centre"
@@ -22,6 +22,13 @@ type OpsNavItem = {
   enabled: boolean
 }
 
+// Types for SETTINGSNAV items for sidebar sections and icons, url
+type SettingsNavItem = {
+  title: string
+  url: string
+  icon: React.ComponentType
+}
+
 // Future sections to be added here including sub-sections as required
 export const OPSNAV = {
   main: [
@@ -29,12 +36,18 @@ export const OPSNAV = {
   ],
 } as const
 
+export const SETTINGSNAV = {
+  main: [{ title: "Account", url: "/settings/account", icon: UserRound }],
+} as const
+
 // Flatten array of routes for metadata page titles
-const ROUTES: Record<string, OpsNavItem> = Object.fromEntries(
-  Object.values(OPSNAV)
-    .flat()
-    .filter((r) => r.enabled)
-    .map((r) => [r.title.toLowerCase(), r])
+const ROUTES: Record<string, OpsNavItem | SettingsNavItem> = Object.fromEntries(
+  [
+    ...Object.values(OPSNAV)
+      .flat()
+      .filter((r) => r.enabled),
+    ...Object.values(SETTINGSNAV).flat(),
+  ].map((r) => [r.title.toLowerCase(), r])
 )
 
 // Receive flat array of page titles for page metadata, e.g. for breadcrumbs
