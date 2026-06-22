@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
 
 import { OpsBreadcrumb } from "@/components/ops/ops-breadcrumb"
 import { OpsNavUser } from "@/components/ops/ops-nav-user"
@@ -11,8 +10,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { auth } from "@/lib/auth"
 import { APP_NAME } from "@/lib/constants"
+import { getSession } from "@/lib/get-session"
+
 
 export const metadata: Metadata = {
   title: {
@@ -26,9 +26,9 @@ export default async function OpsLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  
+  const session = await getSession()
+
   return (
     <SidebarProvider className="h-screen overflow-scroll">
       <OpsSidebar
