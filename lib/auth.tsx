@@ -12,6 +12,7 @@ import {
 } from "@/lib/constants"
 import prisma from "@/lib/prisma"
 import EmailVerificationEmail from "@/emails/email-verification"
+import DeleteAccountVerificationEmail from "@/emails/delete-account-verification"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -52,6 +53,17 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url }) => {
+        void resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL!,
+          to: user.email,
+          subject: "SIMOCC Account Deletion",
+          react: <DeleteAccountVerificationEmail deleteAccountUrl={url} />,
+        })
+      },
     },
   },
   plugins: [nextCookies()], // nextCookies plugin for cookie setting for server action use

@@ -18,6 +18,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   // Exclude all non-public routes to cover (ops) until e.g. subdomain is implemented
   matcher: [
-    "/((?!$|sign-in|sign-up|forgot-password|reset-password|api|_next/static|_next/image|favicon.ico|manifest|icons).*)",
+    "/((?!$|sign-in|sign-up|forgot-password|reset-password|account-deleted|api|_next/static|_next/image|favicon.ico|manifest|icons).*)",
   ],
 }

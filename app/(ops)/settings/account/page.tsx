@@ -1,6 +1,7 @@
 import { ChangeEmailForm } from "@/components/ops/settings/account/change-email-form"
 import { ChangeNameForm } from "@/components/ops/settings/account/change-name-form"
 import { ChangePasswordForm } from "@/components/ops/settings/account/change-password-form"
+import { DeleteAccountContent } from "@/components/ops/settings/account/delete-account-content"
 import SettingsAccountCard from "@/components/ops/settings/account/settings-account-card"
 import { getSession } from "@/lib/get-session"
 
@@ -18,6 +19,9 @@ export default async function AccountPage() {
       </SettingsAccountCard>
       <SettingsAccountCard>
         <ChangePasswordForm />
+      </SettingsAccountCard>
+      <SettingsAccountCard>
+        <DeleteAccountContent />
       </SettingsAccountCard>
     </div>
   )
