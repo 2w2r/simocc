@@ -22,6 +22,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  preferences   UserPreferences?
 
   @@unique([email])
   @@map("user")
@@ -73,4 +74,10 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model UserPreferences {
+  userId          String  @id
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  simbriefPilotId String?
 }
