@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"
 
-export default function SettingsConnectionsCard({
+export default function SettingsCard({
   title,
   children,
 }: Readonly<{

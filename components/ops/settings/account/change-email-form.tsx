@@ -7,7 +7,6 @@ import { Check, RotateCcw, SquarePen, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -91,152 +90,145 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
   }
 
   return (
-    <>
-      <CardHeader>
-        <CardTitle>Email</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} noValidate>
-          <FieldGroup>
-            <Field>
-              <div
-                className={cn(
-                  "flex flex-row flex-nowrap justify-baseline gap-2",
-                  isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap"
-                )}
-              >
-                {!isEditing && (
+    <form onSubmit={handleSubmit} noValidate>
+      <FieldGroup>
+        <Field>
+          <div
+            className={cn(
+              "flex flex-row flex-nowrap justify-baseline gap-2",
+              isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap"
+            )}
+          >
+            {!isEditing && (
+              <>
+                <div
+                  className={cn(
+                    "text-sm h-8 w-full min-w-8 px-2.5 flex items-center overflow-scroll rounded-lg border border-transparent bg-input dark:bg-input/30"
+                  )}
+                >
+                  <span>{currentEmail}</span>
+                </div>
+                <Button
+                  className="aspect-square @max-3xs:grow"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(true)
+                    setEmailChanged(false)
+                  }}
+                >
+                  <SquarePen />
+                </Button>
+              </>
+            )}
+            {isEditing && (
+              <>
+                <Input
+                  type="email"
+                  placeholder={
+                    isEditing
+                      ? "New Email"
+                      : submitted
+                        ? newEmail
+                        : currentEmail
+                  }
+                  disabled={!isEditing || loading || submitted}
+                  required
+                  className={cn(
+                    "text-sm min-w-8",
+                    (errors.email || errors.general) && "border-destructive"
+                  )}
+                  value={newEmail}
+                  onChange={(e) => {
+                    setNewEmail(e.target.value)
+                    setErrors((prev) => ({ ...prev, email: "" }))
+                  }}
+                />
+                {!submitted && (
                   <>
-                    <div
-                      className={cn(
-                        "text-sm h-8 w-full min-w-8 px-2.5 flex items-center overflow-scroll rounded-lg border border-transparent bg-input dark:bg-input/30"
-                      )}
-                    >
-                      <span>{currentEmail}</span>
-                    </div>
                     <Button
-                      className="aspect-square @max-3xs:grow"
-                      variant="outline"
+                      type={!loading ? "submit" : "button"}
+                      className={cn(
+                        "aspect-square @max-3xs:grow",
+                        loading &&
+                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                      )}
+                      variant={loading ? "ghost" : "default"}
+                      disabled={loading || submitted}
+                    >
+                      {!loading ? (
+                        <Check />
+                      ) : (
+                        <Spinner className="size-5" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      className={cn(
+                        "aspect-square @max-3xs:grow",
+                        loading &&
+                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                      )}
+                      variant={loading ? "ghost" : "outline"}
+                      disabled={loading || submitted}
                       onClick={() => {
-                        setIsEditing(true)
-                        setEmailChanged(false)
+                        setIsEditing(false)
+                        setNewEmail("")
+                        setErrors({})
                       }}
                     >
-                      <SquarePen />
+                      <X />
                     </Button>
                   </>
                 )}
-                {isEditing && (
-                  <>
-                    <Input
-                      type="email"
-                      placeholder={
-                        isEditing
-                          ? "New Email"
-                          : submitted
-                            ? newEmail
-                            : currentEmail
-                      }
-                      disabled={!isEditing || loading || submitted}
-                      required
-                      className={cn(
-                        "text-sm min-w-8",
-                        (errors.email || errors.general) && "border-destructive"
-                      )}
-                      value={newEmail}
-                      onChange={(e) => {
-                        setNewEmail(e.target.value)
-                        setErrors((prev) => ({ ...prev, email: "" }))
-                      }}
-                    />
-                    {!submitted && (
-                      <>
-                        <Button
-                          type={!loading ? "submit" : "button"}
-                          className={cn(
-                            "aspect-square @max-3xs:grow",
-                            loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
-                          )}
-                          variant={loading ? "ghost" : "default"}
-                          disabled={loading || submitted}
-                        >
-                          {!loading ? (
-                            <Check />
-                          ) : (
-                            <Spinner className="size-5" />
-                          )}
-                        </Button>
-                        <Button
-                          type="button"
-                          className={cn(
-                            "aspect-square @max-3xs:grow",
-                            loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
-                          )}
-                          variant={loading ? "ghost" : "outline"}
-                          disabled={loading || submitted}
-                          onClick={() => {
-                            setIsEditing(false)
-                            setNewEmail("")
-                            setErrors({})
-                          }}
-                        >
-                          <X />
-                        </Button>
-                      </>
+                {submitted && (
+                  <Button
+                    className={cn(
+                      "aspect-square @max-3xs:grow",
+                      loading &&
+                      "text-primary border-border! no-underline! hover:pointer-events-none"
                     )}
-                    {submitted && (
-                      <Button
-                        className={cn(
-                          "aspect-square @max-3xs:grow",
-                          loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
-                        )}
-                        disabled={loading}
-                        variant={loading ? "ghost" : "outline"}
-                        onClick={() => {
-                          setSubmitted(false)
-                        }}
-                      >
-                        <RotateCcw />
-                      </Button>
-                    )}
-                  </>
+                    disabled={loading}
+                    variant={loading ? "ghost" : "outline"}
+                    onClick={() => {
+                      setSubmitted(false)
+                    }}
+                  >
+                    <RotateCcw />
+                  </Button>
                 )}
-              </div>
-              {!emailChanged && (
-                <>
-                  {(errors.email || errors.general) && (
-                    <StatusMessage
-                      variant="error"
-                      text={errors.email || errors.general}
-                    />
-                  )}
-                  {submitted && (
-                    <StatusMessage variant="info" text="Check your inbox." />
-                  )}
-                  {isEditing && !submitted && (
-                    <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                      {!loading ? (
-                        <span>A verification link will be sent.</span>
-                      ) : (
-                        <span>Processing . . .</span>
-                      )}
-                    </FieldDescription>
-                  )}
-                </>
-              )}
-              {emailChanged && (
+              </>
+            )}
+          </div>
+          {!emailChanged && (
+            <>
+              {(errors.email || errors.general) && (
                 <StatusMessage
-                  variant="success"
-                  text="Email changed successfully."
+                  variant="error"
+                  text={errors.email || errors.general}
                 />
               )}
-            </Field>
-          </FieldGroup>
-        </form>
-      </CardContent>
-    </>
+              {submitted && (
+                <StatusMessage variant="info" text="Check your inbox." />
+              )}
+              {isEditing && !submitted && (
+                <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
+                  {!loading ? (
+                    <span>A verification link will be sent.</span>
+                  ) : (
+                    <span>Processing . . .</span>
+                  )}
+                </FieldDescription>
+              )}
+            </>
+          )}
+          {emailChanged && (
+            <StatusMessage
+              variant="success"
+              text="Email changed successfully."
+            />
+          )}
+        </Field>
+      </FieldGroup>
+    </form>
   )
 }

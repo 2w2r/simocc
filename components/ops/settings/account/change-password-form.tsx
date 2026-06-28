@@ -5,7 +5,6 @@ import { Check, SquarePen, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -103,159 +102,152 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <>
-      <CardHeader>
-        <CardTitle>Password</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} noValidate>
-          <FieldGroup>
-            <Field>
-              {!isEditing ? (
-                <div className="flex flex-row flex-nowrap justify-baseline gap-2 @max-[8rem]:flex-wrap">
-                  <div className="text-sm h-8 w-full min-w-8 px-2.5 flex items-center rounded-lg border border-transparent bg-input dark:bg-input/30">
-                    <span className="text-3xl overflow-hidden">
-                      ••••••••••••
-                    </span>
-                  </div>
+    <form onSubmit={handleSubmit} noValidate>
+      <FieldGroup>
+        <Field>
+          {!isEditing ? (
+            <div className="flex flex-row flex-nowrap justify-baseline gap-2 @max-[8rem]:flex-wrap">
+              <div className="text-sm h-8 w-full min-w-8 px-2.5 flex items-center rounded-lg border border-transparent bg-input dark:bg-input/30">
+                <span className="text-3xl overflow-hidden">
+                  ••••••••••••
+                </span>
+              </div>
+              <Button
+                type="button"
+                className="aspect-square @max-3xs:grow"
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(true)
+                  setPasswordChanged(false)
+                }}
+              >
+                <SquarePen />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Field>
+                <Input
+                  type="password"
+                  placeholder="Current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                  autoComplete="current-password"
+                  className={cn(
+                    "text-sm",
+                    errors.currentPassword && "border-destructive"
+                  )}
+                />
+                {errors.currentPassword && (
+                  <StatusMessage
+                    variant="error"
+                    text={errors.currentPassword}
+                  />
+                )}
+              </Field>
+              <Field>
+                <Input
+                  type="password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value)
+                    setErrors((prev) => ({ ...prev, newPassword: "" }))
+                  }}
+                  disabled={loading}
+                  required
+                  autoComplete="new-password"
+                  className={cn(
+                    "text-sm",
+                    (errors.newPassword || errors.confirmPassword) &&
+                    "border-destructive"
+                  )}
+                />
+                {errors.newPassword && (
+                  <StatusMessage
+                    variant="error"
+                    text={errors.newPassword}
+                  />
+                )}
+              </Field>
+              <Field>
+                <Input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value)
+                    setErrors((prev) => ({ ...prev, confirmPassword: "" }))
+                  }}
+                  disabled={loading}
+                  required
+                  autoComplete="new-password"
+                  className={cn(
+                    "text-sm",
+                    (errors.newPassword || errors.confirmPassword) &&
+                    "border-destructive"
+                  )}
+                />
+                {errors.confirmPassword && (
+                  <StatusMessage
+                    variant="error"
+                    text={errors.confirmPassword}
+                  />
+                )}
+              </Field>
+              <Field>
+                <div className="flex flex-row justify-end gap-2 @max-3xs:flex-wrap">
+                  <Button
+                    type={!loading ? "submit" : "button"}
+                    className={cn(
+                      "aspect-square @max-3xs:grow",
+                      loading &&
+                      "text-primary border-border! no-underline! hover:pointer-events-none"
+                    )}
+                    variant={loading ? "ghost" : "default"}
+                    disabled={loading}
+                  >
+                    {!loading ? <Check /> : <Spinner className="size-5" />}
+                  </Button>
                   <Button
                     type="button"
-                    className="aspect-square @max-3xs:grow"
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(true)
-                      setPasswordChanged(false)
-                    }}
+                    className={cn(
+                      "aspect-square @max-3xs:grow",
+                      loading &&
+                      "text-primary border-border! no-underline! hover:pointer-events-none"
+                    )}
+                    variant={loading ? "ghost" : "outline"}
+                    disabled={loading}
+                    onClick={handleCancel}
                   >
-                    <SquarePen />
+                    <X />
                   </Button>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <Field>
-                    <Input
-                      type="password"
-                      placeholder="Current password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                      autoComplete="current-password"
-                      className={cn(
-                        "text-sm",
-                        errors.currentPassword && "border-destructive"
-                      )}
-                    />
-                    {errors.currentPassword && (
-                      <StatusMessage
-                        variant="error"
-                        text={errors.currentPassword}
-                      />
+                {errors.general && (
+                  <StatusMessage variant="error" text={errors.general} />
+                )}
+                {isEditing && (
+                  <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
+                    {!loading ? (
+                      <span>Enter your current and new password.</span>
+                    ) : (
+                      <span>Processing . . .</span>
                     )}
-                  </Field>
-                  <Field>
-                    <Input
-                      type="password"
-                      placeholder="New password"
-                      value={newPassword}
-                      onChange={(e) => {
-                        setNewPassword(e.target.value)
-                        setErrors((prev) => ({ ...prev, newPassword: "" }))
-                      }}
-                      disabled={loading}
-                      required
-                      autoComplete="new-password"
-                      className={cn(
-                        "text-sm",
-                        (errors.newPassword || errors.confirmPassword) &&
-                        "border-destructive"
-                      )}
-                    />
-                    {errors.newPassword && (
-                      <StatusMessage
-                        variant="error"
-                        text={errors.newPassword}
-                      />
-                    )}
-                  </Field>
-                  <Field>
-                    <Input
-                      type="password"
-                      placeholder="Confirm new password"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value)
-                        setErrors((prev) => ({ ...prev, confirmPassword: "" }))
-                      }}
-                      disabled={loading}
-                      required
-                      autoComplete="new-password"
-                      className={cn(
-                        "text-sm",
-                        (errors.newPassword || errors.confirmPassword) &&
-                        "border-destructive"
-                      )}
-                    />
-                    {errors.confirmPassword && (
-                      <StatusMessage
-                        variant="error"
-                        text={errors.confirmPassword}
-                      />
-                    )}
-                  </Field>
-                  <Field>
-                    <div className="flex flex-row justify-end gap-2 @max-3xs:flex-wrap">
-                      <Button
-                        type={!loading ? "submit" : "button"}
-                        className={cn(
-                          "aspect-square @max-3xs:grow",
-                          loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
-                        )}
-                        variant={loading ? "ghost" : "default"}
-                        disabled={loading}
-                      >
-                        {!loading ? <Check /> : <Spinner className="size-5" />}
-                      </Button>
-                      <Button
-                        type="button"
-                        className={cn(
-                          "aspect-square @max-3xs:grow",
-                          loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
-                        )}
-                        variant={loading ? "ghost" : "outline"}
-                        disabled={loading}
-                        onClick={handleCancel}
-                      >
-                        <X />
-                      </Button>
-                    </div>
-                    {errors.general && (
-                      <StatusMessage variant="error" text={errors.general} />
-                    )}
-                    {isEditing && (
-                      <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                        {!loading ? (
-                          <span>Enter your current and new password.</span>
-                        ) : (
-                          <span>Processing . . .</span>
-                        )}
-                      </FieldDescription>
-                    )}
-                  </Field>
-                </div>
-              )}
-              {passwordChanged && (
-                <StatusMessage
-                  variant="success"
-                  text="Password changed successfully."
-                />
-              )}
-            </Field>
-          </FieldGroup>
-        </form>
-      </CardContent>
-    </>
+                  </FieldDescription>
+                )}
+              </Field>
+            </div>
+          )}
+          {passwordChanged && (
+            <StatusMessage
+              variant="success"
+              text="Password changed successfully."
+            />
+          )}
+        </Field>
+      </FieldGroup>
+    </form>
   )
 }

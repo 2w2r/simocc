@@ -6,7 +6,6 @@ import { Check, RotateCcw, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
@@ -60,87 +59,80 @@ export function DeleteAccountContent() {
   }
 
   return (
-    <>
-      <CardHeader>
-        <CardTitle>Delete account</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <FieldGroup>
-          <Field>
-            <div className="flex flex-row flex-nowrap @max-3xs:flex-wrap justify-baseline gap-2">
+    <FieldGroup>
+      <Field>
+        <div className="flex flex-row flex-nowrap @max-3xs:flex-wrap justify-baseline gap-2">
+          <Button
+            type="button"
+            variant={!isConfirming ? "destructive" : "secondary"}
+            className="w-full shrink"
+            disabled={isConfirming || loading || submitted}
+            onClick={() => setIsConfirming(true)}
+          >
+            <span className="truncate">Delete account</span>
+          </Button>
+          {isConfirming && !submitted && (
+            <>
               <Button
                 type="button"
-                variant={!isConfirming ? "destructive" : "secondary"}
-                className="w-full shrink"
-                disabled={isConfirming || loading || submitted}
-                onClick={() => setIsConfirming(true)}
-              >
-                <span className="truncate">Delete account</span>
-              </Button>
-              {isConfirming && !submitted && (
-                <>
-                  <Button
-                    type="button"
-                    className={cn(
-                      "aspect-square @max-3xs:grow",
-                      loading &&
-                      "text-primary border-border! no-underline! hover:pointer-events-none"
-                    )}
-                    variant={loading ? "ghost" : "destructive"}
-                    disabled={loading}
-                    onClick={handleConfirm}
-                  >
-                    {loading ? <Spinner className="size-5" /> : <Check />}
-                  </Button>
-                  <Button
-                    type="button"
-                    className={cn(
-                      "aspect-square @max-3xs:grow",
-                      loading &&
-                      "text-primary border-border! no-underline! hover:pointer-events-none"
-                    )}
-                    variant={loading ? "ghost" : "outline"}
-                    disabled={loading}
-                    onClick={() => {
-                      setIsConfirming(false)
-                      setErrors({})
-                    }}
-                  >
-                    <X />
-                  </Button>
-                </>
-              )}
-              {submitted && (
-                <Button
-                  type="button"
-                  className="aspect-square @max-3xs:grow"
-                  variant="outline"
-                  onClick={() => {
-                    setSubmitted(false)
-                  }}
-                >
-                  <RotateCcw />
-                </Button>
-              )}
-            </div>
-            {errors.general && (
-              <StatusMessage variant="error" text={errors.general} />
-            )}
-            {submitted && (
-              <StatusMessage variant="info" text="Check your inbox." />
-            )}
-            {isConfirming && (
-              <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                {!loading ? (
-                  <span>An account deletion link will be sent.</span>
-                ) : (
-                  <span>Processing . . .</span>
+                className={cn(
+                  "aspect-square @max-3xs:grow",
+                  loading &&
+                  "text-primary border-border! no-underline! hover:pointer-events-none"
                 )}
-              </FieldDescription>
+                variant={loading ? "ghost" : "destructive"}
+                disabled={loading}
+                onClick={handleConfirm}
+              >
+                {loading ? <Spinner className="size-5" /> : <Check />}
+              </Button>
+              <Button
+                type="button"
+                className={cn(
+                  "aspect-square @max-3xs:grow",
+                  loading &&
+                  "text-primary border-border! no-underline! hover:pointer-events-none"
+                )}
+                variant={loading ? "ghost" : "outline"}
+                disabled={loading}
+                onClick={() => {
+                  setIsConfirming(false)
+                  setErrors({})
+                }}
+              >
+                <X />
+              </Button>
+            </>
+          )}
+          {submitted && (
+            <Button
+              type="button"
+              className="aspect-square @max-3xs:grow"
+              variant="outline"
+              onClick={() => {
+                setSubmitted(false)
+              }}
+            >
+              <RotateCcw />
+            </Button>
+          )}
+        </div>
+        {errors.general && (
+          <StatusMessage variant="error" text={errors.general} />
+        )}
+        {submitted && (
+          <StatusMessage variant="info" text="Check your inbox." />
+        )}
+        {isConfirming && (
+          <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
+            {!loading ? (
+              <span>An account deletion link will be sent.</span>
+            ) : (
+              <span>Processing . . .</span>
             )}
-          </Field>
-        </FieldGroup>
-      </CardContent>
-    </>
+          </FieldDescription>
+        )}
+      </Field>
+    </FieldGroup>
   )
 }

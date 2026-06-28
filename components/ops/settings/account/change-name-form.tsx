@@ -6,7 +6,6 @@ import { Check, SquarePen, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -86,105 +85,98 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
   }
 
   return (
-    <>
-      <CardHeader>
-        <CardTitle>Display name</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} noValidate>
-          <FieldGroup>
-            <Field>
-              <div
-                className={cn(
-                  "flex flex-row flex-nowrap justify-baseline gap-2",
-                  isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap"
-                )}
-              >
-                {!isEditing && (
-                  <>
-                    <div className="text-sm h-8 w-full min-w-8 px-2.5 flex items-center overflow-scroll rounded-lg border border-transparent bg-input dark:bg-input/30">
-                      <span>{name}</span>
-                    </div>
-                    <Button
-                      className="aspect-square @max-3xs:grow"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditing(true)
-                        setNameChanged(false)
-                      }}
-                    >
-                      <SquarePen />
-                    </Button>
-                  </>
-                )}
-                {isEditing && (
-                  <>
-                    <Input
-                      type="text"
-                      placeholder="New display name"
-                      autoComplete="nickname"
-                      disabled={loading}
-                      className={cn(
-                        "text-sm min-w-8",
-                        (errors.newName || errors.general) &&
-                        "border-destructive"
-                      )}
-                      value={newName}
-                      onChange={(e) => {
-                        setNewName(e.target.value)
-                        setErrors((prev) => ({ ...prev, newName: "" }))
-                      }}
-                    />
-                    <Button
-                      type={!loading ? "submit" : "button"}
-                      className={cn(
-                        "aspect-square @max-3xs:grow",
-                        loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
-                      )}
-                      variant={loading ? "ghost" : "default"}
-                      disabled={loading}
-                    >
-                      {!loading ? <Check /> : <Spinner className="size-5" />}
-                    </Button>
-                    <Button
-                      type="button"
-                      className={cn(
-                        "aspect-square @max-3xs:grow",
-                        loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
-                      )}
-                      variant={loading ? "ghost" : "outline"}
-                      disabled={loading}
-                      onClick={() => {
-                        setIsEditing(false)
-                        setNewName("")
-                        setErrors({})
-                      }}
-                    >
-                      <X />
-                    </Button>
-                  </>
-                )}
-              </div>
-              {(errors.newName || errors.general) && (
-                <StatusMessage
-                  variant="error"
-                  text={errors.newName || errors.general}
+    <form onSubmit={handleSubmit} noValidate>
+      <FieldGroup>
+        <Field>
+          <div
+            className={cn(
+              "flex flex-row flex-nowrap justify-baseline gap-2",
+              isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap"
+            )}
+          >
+            {!isEditing && (
+              <>
+                <div className="text-sm h-8 w-full min-w-8 px-2.5 flex items-center overflow-scroll rounded-lg border border-transparent bg-input dark:bg-input/30">
+                  <span>{name}</span>
+                </div>
+                <Button
+                  className="aspect-square @max-3xs:grow"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(true)
+                    setNameChanged(false)
+                  }}
+                >
+                  <SquarePen />
+                </Button>
+              </>
+            )}
+            {isEditing && (
+              <>
+                <Input
+                  type="text"
+                  placeholder="New display name"
+                  autoComplete="nickname"
+                  disabled={loading}
+                  className={cn(
+                    "text-sm min-w-8",
+                    (errors.newName || errors.general) &&
+                    "border-destructive"
+                  )}
+                  value={newName}
+                  onChange={(e) => {
+                    setNewName(e.target.value)
+                    setErrors((prev) => ({ ...prev, newName: "" }))
+                  }}
                 />
-              )}
-              {loading && (
-                <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                  <span>Processing . . .</span>
-                </FieldDescription>
-              )}
-              {nameChanged && !isEditing && (
-                <StatusMessage variant="success" text="Display name updated." />
-              )}
-            </Field>
-          </FieldGroup>
-        </form>
-      </CardContent>
-    </>
+                <Button
+                  type={!loading ? "submit" : "button"}
+                  className={cn(
+                    "aspect-square @max-3xs:grow",
+                    loading &&
+                    "text-primary border-border! no-underline! hover:pointer-events-none"
+                  )}
+                  variant={loading ? "ghost" : "default"}
+                  disabled={loading}
+                >
+                  {!loading ? <Check /> : <Spinner className="size-5" />}
+                </Button>
+                <Button
+                  type="button"
+                  className={cn(
+                    "aspect-square @max-3xs:grow",
+                    loading &&
+                    "text-primary border-border! no-underline! hover:pointer-events-none"
+                  )}
+                  variant={loading ? "ghost" : "outline"}
+                  disabled={loading}
+                  onClick={() => {
+                    setIsEditing(false)
+                    setNewName("")
+                    setErrors({})
+                  }}
+                >
+                  <X />
+                </Button>
+              </>
+            )}
+          </div>
+          {(errors.newName || errors.general) && (
+            <StatusMessage
+              variant="error"
+              text={errors.newName || errors.general}
+            />
+          )}
+          {loading && (
+            <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
+              <span>Processing . . .</span>
+            </FieldDescription>
+          )}
+          {nameChanged && !isEditing && (
+            <StatusMessage variant="success" text="Display name updated." />
+          )}
+        </Field>
+      </FieldGroup>
+    </form>
   )
 }
