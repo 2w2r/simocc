@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 
-import { Check, CircleAlert, CircleCheck, SquarePen, X } from "lucide-react"
+import { Check, SquarePen, X } from "lucide-react"
 
+import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
@@ -126,7 +127,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                       className={cn(
                         "text-sm min-w-8",
                         (errors.newName || errors.general) &&
-                          "border-destructive"
+                        "border-destructive"
                       )}
                       value={newName}
                       onChange={(e) => {
@@ -139,7 +140,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                       className={cn(
                         "aspect-square @max-3xs:grow",
                         loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
+                        "text-primary border-border! no-underline! hover:pointer-events-none"
                       )}
                       variant={loading ? "ghost" : "default"}
                       disabled={loading}
@@ -151,7 +152,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                       className={cn(
                         "aspect-square @max-3xs:grow",
                         loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
+                        "text-primary border-border! no-underline! hover:pointer-events-none"
                       )}
                       variant={loading ? "ghost" : "outline"}
                       disabled={loading}
@@ -167,12 +168,10 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                 )}
               </div>
               {(errors.newName || errors.general) && (
-                <FieldDescription className="flex gap-2 text-destructive">
-                  <span>
-                    <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                    {errors.newName || errors.general}
-                  </span>
-                </FieldDescription>
+                <StatusMessage
+                  variant="error"
+                  text={errors.newName || errors.general}
+                />
               )}
               {loading && (
                 <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
@@ -180,12 +179,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                 </FieldDescription>
               )}
               {nameChanged && !isEditing && (
-                <FieldDescription className="flex gap-2 text-green-500">
-                  <span>
-                    <CircleCheck className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                    Display name updated.
-                  </span>
-                </FieldDescription>
+                <StatusMessage variant="success" text="Display name updated." />
               )}
             </Field>
           </FieldGroup>

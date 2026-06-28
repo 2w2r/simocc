@@ -4,9 +4,6 @@ import { useState } from "react"
 
 import {
   Check,
-  CircleAlert,
-  CircleCheck,
-  Info,
   Plus,
   Unlink,
   X,
@@ -33,6 +30,7 @@ import {
 } from "@/components/ui/tooltip"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 interface SimbriefFormProps {
   currentPilotId: string | null
@@ -193,28 +191,13 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                     </span>
                   </div>
                   {errors.general && (
-                    <FieldDescription className="flex gap-2 text-destructive">
-                      <span>
-                        <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        {errors.general}
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage variant="error" text={errors.general} />
                   )}
                   {saved && (
-                    <FieldDescription className="flex gap-2 text-green-500">
-                      <span>
-                        <CircleCheck className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        SimBrief Pilot ID saved.
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage variant="success" text="SimBrief Pilot ID saved." />
                   )}
                   {removed && (
-                    <FieldDescription className="flex gap-2 text-blue-500">
-                      <span>
-                        <Info className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        SimBrief Pilot ID removed.
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage variant="info" text="SimBrief Pilot ID removed." />
                   )}
                 </div>
                 {!pilotId && (
@@ -258,7 +241,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                     className={cn(
                       "text-sm text-center min-w-8",
                       (errors.draftPilotId || errors.general) &&
-                        "border-destructive"
+                      "border-destructive"
                     )}
                     value={draftPilotId}
                     onChange={(e) => {
@@ -267,12 +250,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                     }}
                   />
                   {(errors.draftPilotId || errors.general) && (
-                    <FieldDescription className="flex gap-2 text-destructive">
-                      <span>
-                        <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        {errors.draftPilotId || errors.general}
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage variant="error" text={errors.draftPilotId || errors.general} />
                   )}
                 </div>
                 <Button

@@ -3,16 +3,9 @@ import { useEffect, useState } from "react"
 
 import { useRouter, useSearchParams } from "next/navigation"
 
-import {
-  Check,
-  CircleAlert,
-  CircleCheck,
-  Info,
-  RotateCcw,
-  SquarePen,
-  X,
-} from "lucide-react"
+import { Check, RotateCcw, SquarePen, X } from "lucide-react"
 
+import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
@@ -163,7 +156,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                           className={cn(
                             "aspect-square @max-3xs:grow",
                             loading &&
-                              "text-primary border-border! no-underline! hover:pointer-events-none"
+                            "text-primary border-border! no-underline! hover:pointer-events-none"
                           )}
                           variant={loading ? "ghost" : "default"}
                           disabled={loading || submitted}
@@ -179,7 +172,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                           className={cn(
                             "aspect-square @max-3xs:grow",
                             loading &&
-                              "text-primary border-border! no-underline! hover:pointer-events-none"
+                            "text-primary border-border! no-underline! hover:pointer-events-none"
                           )}
                           variant={loading ? "ghost" : "outline"}
                           disabled={loading || submitted}
@@ -198,7 +191,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                         className={cn(
                           "aspect-square @max-3xs:grow",
                           loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
+                          "text-primary border-border! no-underline! hover:pointer-events-none"
                         )}
                         disabled={loading}
                         variant={loading ? "ghost" : "outline"}
@@ -215,20 +208,13 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
               {!emailChanged && (
                 <>
                   {(errors.email || errors.general) && (
-                    <FieldDescription className="flex gap-2 text-destructive">
-                      <span>
-                        <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        {errors.email || errors.general}
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage
+                      variant="error"
+                      text={errors.email || errors.general}
+                    />
                   )}
                   {submitted && (
-                    <FieldDescription className="flex gap-2 items-center text-blue-500">
-                      <span>
-                        <Info className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                        Check your inbox.
-                      </span>
-                    </FieldDescription>
+                    <StatusMessage variant="info" text="Check your inbox." />
                   )}
                   {isEditing && !submitted && (
                     <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
@@ -242,12 +228,10 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                 </>
               )}
               {emailChanged && (
-                <FieldDescription className="flex gap-2 items-center content-center text-green-500">
-                  <span>
-                    <CircleCheck className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                    Email changed successfully.
-                  </span>
-                </FieldDescription>
+                <StatusMessage
+                  variant="success"
+                  text="Email changed successfully."
+                />
               )}
             </Field>
           </FieldGroup>

@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 
-import { Check, CircleAlert, Info, RotateCcw, X } from "lucide-react"
+import { Check, RotateCcw, X } from "lucide-react"
 
+import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
@@ -83,7 +84,7 @@ export function DeleteAccountContent() {
                     className={cn(
                       "aspect-square @max-3xs:grow",
                       loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                      "text-primary border-border! no-underline! hover:pointer-events-none"
                     )}
                     variant={loading ? "ghost" : "destructive"}
                     disabled={loading}
@@ -96,7 +97,7 @@ export function DeleteAccountContent() {
                     className={cn(
                       "aspect-square @max-3xs:grow",
                       loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                      "text-primary border-border! no-underline! hover:pointer-events-none"
                     )}
                     variant={loading ? "ghost" : "outline"}
                     disabled={loading}
@@ -123,20 +124,10 @@ export function DeleteAccountContent() {
               )}
             </div>
             {errors.general && (
-              <FieldDescription className="flex gap-2 text-destructive">
-                <span>
-                  <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                  {errors.general}
-                </span>
-              </FieldDescription>
+              <StatusMessage variant="error" text={errors.general} />
             )}
             {submitted && (
-              <FieldDescription className="flex gap-2 items-center text-blue-500">
-                <span>
-                  <Info className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                  Check your inbox.
-                </span>
-              </FieldDescription>
+              <StatusMessage variant="info" text="Check your inbox." />
             )}
             {isConfirming && (
               <FieldDescription className="text-left flex flex-wrap justify-end gap-2">

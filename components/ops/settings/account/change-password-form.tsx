@@ -1,8 +1,9 @@
 "use client"
 import { useState } from "react"
 
-import { Check, CircleAlert, CircleCheck, SquarePen, X } from "lucide-react"
+import { Check, SquarePen, X } from "lucide-react"
 
+import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
@@ -146,12 +147,10 @@ export function ChangePasswordForm() {
                       )}
                     />
                     {errors.currentPassword && (
-                      <FieldDescription className="flex gap-2 text-destructive">
-                        <span>
-                          <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                          {errors.currentPassword}
-                        </span>
-                      </FieldDescription>
+                      <StatusMessage
+                        variant="error"
+                        text={errors.currentPassword}
+                      />
                     )}
                   </Field>
                   <Field>
@@ -169,16 +168,14 @@ export function ChangePasswordForm() {
                       className={cn(
                         "text-sm",
                         (errors.newPassword || errors.confirmPassword) &&
-                          "border-destructive"
+                        "border-destructive"
                       )}
                     />
                     {errors.newPassword && (
-                      <FieldDescription className="flex gap-2 text-destructive">
-                        <span>
-                          <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                          {errors.newPassword}
-                        </span>
-                      </FieldDescription>
+                      <StatusMessage
+                        variant="error"
+                        text={errors.newPassword}
+                      />
                     )}
                   </Field>
                   <Field>
@@ -196,16 +193,14 @@ export function ChangePasswordForm() {
                       className={cn(
                         "text-sm",
                         (errors.newPassword || errors.confirmPassword) &&
-                          "border-destructive"
+                        "border-destructive"
                       )}
                     />
                     {errors.confirmPassword && (
-                      <FieldDescription className="flex gap-2 text-destructive">
-                        <span>
-                          <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                          {errors.confirmPassword}
-                        </span>
-                      </FieldDescription>
+                      <StatusMessage
+                        variant="error"
+                        text={errors.confirmPassword}
+                      />
                     )}
                   </Field>
                   <Field>
@@ -215,7 +210,7 @@ export function ChangePasswordForm() {
                         className={cn(
                           "aspect-square @max-3xs:grow",
                           loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
+                          "text-primary border-border! no-underline! hover:pointer-events-none"
                         )}
                         variant={loading ? "ghost" : "default"}
                         disabled={loading}
@@ -227,7 +222,7 @@ export function ChangePasswordForm() {
                         className={cn(
                           "aspect-square @max-3xs:grow",
                           loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
+                          "text-primary border-border! no-underline! hover:pointer-events-none"
                         )}
                         variant={loading ? "ghost" : "outline"}
                         disabled={loading}
@@ -237,12 +232,7 @@ export function ChangePasswordForm() {
                       </Button>
                     </div>
                     {errors.general && (
-                      <FieldDescription className="flex gap-2 text-destructive">
-                        <span>
-                          <CircleAlert className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                          {errors.general}
-                        </span>
-                      </FieldDescription>
+                      <StatusMessage variant="error" text={errors.general} />
                     )}
                     {isEditing && (
                       <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
@@ -257,12 +247,10 @@ export function ChangePasswordForm() {
                 </div>
               )}
               {passwordChanged && (
-                <FieldDescription className="flex gap-2 items-center content-center text-green-500">
-                  <span>
-                    <CircleCheck className="size-4 shrink-0 grow-0 mb-0.75 inline" />{" "}
-                    Password changed successfully.
-                  </span>
-                </FieldDescription>
+                <StatusMessage
+                  variant="success"
+                  text="Password changed successfully."
+                />
               )}
             </Field>
           </FieldGroup>
