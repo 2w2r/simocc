@@ -5,7 +5,7 @@ import { Check, SquarePen, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
+import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
@@ -16,6 +16,7 @@ import {
   PASSWORD_MIN_LENGTH,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("")
@@ -229,13 +230,7 @@ export function ChangePasswordForm() {
                   <StatusMessage variant="error" text={errors.general} />
                 )}
                 {isEditing && (
-                  <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                    {!loading ? (
-                      <span>Enter your current and new password.</span>
-                    ) : (
-                      <span>Processing . . .</span>
-                    )}
-                  </FieldDescription>
+                  <SettingsDescription loading={loading} message="Enter your current and new password." />
                 )}
               </Field>
             </div>

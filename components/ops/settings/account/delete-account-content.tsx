@@ -6,11 +6,12 @@ import { Check, RotateCcw, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
+import { Field, FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 
 export function DeleteAccountContent() {
   const [isConfirming, setIsConfirming] = useState(false)
@@ -124,13 +125,7 @@ export function DeleteAccountContent() {
           <StatusMessage variant="info" text="Check your inbox." />
         )}
         {isConfirming && (
-          <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-            {!loading ? (
-              <span>An account deletion link will be sent.</span>
-            ) : (
-              <span>Processing . . .</span>
-            )}
-          </FieldDescription>
+          <SettingsDescription loading={loading} message="An account deletion link will be sent." />
         )}
       </Field>
     </FieldGroup>

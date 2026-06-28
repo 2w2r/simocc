@@ -7,12 +7,13 @@ import { Check, RotateCcw, SquarePen, X } from "lucide-react"
 
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
+import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 
 interface ChangeEmailCardProps {
   currentEmail: string
@@ -211,13 +212,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                 <StatusMessage variant="info" text="Check your inbox." />
               )}
               {isEditing && !submitted && (
-                <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-                  {!loading ? (
-                    <span>A verification link will be sent.</span>
-                  ) : (
-                    <span>Processing . . .</span>
-                  )}
-                </FieldDescription>
+                <SettingsDescription loading={loading} message="A verification link will be sent." />
               )}
             </>
           )}

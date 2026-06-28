@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -31,6 +30,7 @@ import {
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { StatusMessage } from "@/components/ops/settings/status-message"
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 
 interface SimbriefFormProps {
   currentPilotId: string | null
@@ -278,9 +278,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
             )}
           </div>
           {loading && (
-            <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
-              <span>Processing . . .</span>
-            </FieldDescription>
+            <SettingsDescription loading={loading} message="" />
           )}
         </Field>
       </FieldGroup>
