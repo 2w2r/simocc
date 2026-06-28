@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 
-import { LayoutGrid, UserRound } from "lucide-react"
+import { LayoutGrid, Unplug, UserRound } from "lucide-react"
 
 export const APP_NAME = "SIMOCC"
 export const APP_DESCRIPTION = "(Flight) Simulation Operations Control Centre"
@@ -38,7 +38,10 @@ export const OPSNAV = {
 } as const
 
 export const SETTINGSNAV = {
-  main: [{ title: "Account", url: "/settings/account", icon: UserRound }],
+  main: [
+    { title: "Account", url: "/settings/account", icon: UserRound },
+    { title: "Connections", url: "/settings/connections", icon: Unplug },
+  ],
 } as const
 
 // Flatten array of routes for metadata page titles
