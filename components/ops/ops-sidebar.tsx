@@ -53,8 +53,7 @@ export function OpsSidebar({
     </SidebarHeader>
   ) : (
     // TODO: profile switcher in sidebar header
-    <>
-    </>
+    <></>
   )
 
   return (

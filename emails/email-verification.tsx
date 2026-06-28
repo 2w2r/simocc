@@ -31,7 +31,8 @@ export function EmailVerificationEmail({
           <Container className="p-8 max-w-md min-w-64 flex gap-20">
             <Heading className="text-3xl">SIMOCC</Heading>
             <Text className="text-base text-gray-700">
-              Email verification is required to confirm this email address. Click the link below to verify your email address.
+              Email verification is required to confirm this email address.
+              Click the link below to verify your email address.
             </Text>
             <div className="mt-6">
               <Button
@@ -46,7 +47,8 @@ export function EmailVerificationEmail({
             </div>
             <Hr className="border-gray-300 my-6" />
             <Text className="text-xs text-gray-500">
-              If this action was not initiated by you, you can ignore this email.
+              If this action was not initiated by you, you can ignore this
+              email.
             </Text>
           </Container>
         </Body>

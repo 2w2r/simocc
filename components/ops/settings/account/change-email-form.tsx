@@ -109,7 +109,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
               <div
                 className={cn(
                   "flex flex-row flex-nowrap justify-baseline gap-2",
-                  isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap",
+                  isEditing ? "@max-3xs:flex-wrap" : "@max-[8rem]:flex-wrap"
                 )}
               >
                 {!isEditing && (
@@ -163,7 +163,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                           className={cn(
                             "aspect-square @max-3xs:grow",
                             loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
+                              "text-primary border-border! no-underline! hover:pointer-events-none"
                           )}
                           variant={loading ? "ghost" : "default"}
                           disabled={loading || submitted}
@@ -179,7 +179,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                           className={cn(
                             "aspect-square @max-3xs:grow",
                             loading &&
-                            "text-primary border-border! no-underline! hover:pointer-events-none"
+                              "text-primary border-border! no-underline! hover:pointer-events-none"
                           )}
                           variant={loading ? "ghost" : "outline"}
                           disabled={loading || submitted}
@@ -198,7 +198,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                         className={cn(
                           "aspect-square @max-3xs:grow",
                           loading &&
-                          "text-primary border-border! no-underline! hover:pointer-events-none"
+                            "text-primary border-border! no-underline! hover:pointer-events-none"
                         )}
                         disabled={loading}
                         variant={loading ? "ghost" : "outline"}
@@ -233,9 +233,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                   {isEditing && !submitted && (
                     <FieldDescription className="text-left flex flex-wrap justify-end gap-2">
                       {!loading ? (
-                        <span>
-                          A verification link will be sent.
-                        </span>
+                        <span>A verification link will be sent.</span>
                       ) : (
                         <span>Processing . . .</span>
                       )}

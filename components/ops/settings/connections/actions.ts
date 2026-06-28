@@ -1,10 +1,13 @@
 "use server"
 
 import { headers } from "next/headers"
+
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 
-export async function saveSimbriefPilotId(pilotId: string): Promise<{ error?: string }> {
+export async function saveSimbriefPilotId(
+  pilotId: string
+): Promise<{ error?: string }> {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return { error: "Not authenticated." }
 

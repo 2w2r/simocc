@@ -3,6 +3,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { nextCookies } from "better-auth/next-js"
 import { Resend } from "resend"
 
+import DeleteAccountVerificationEmail from "@/emails/delete-account-verification"
+import EmailVerificationEmail from "@/emails/email-verification"
 import { PasswordResetEmail } from "@/emails/password-reset"
 import {
   EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_S,
@@ -11,8 +13,6 @@ import {
   RESET_PASSWORD_TOKEN_EXPIRES_IN_S,
 } from "@/lib/constants"
 import prisma from "@/lib/prisma"
-import EmailVerificationEmail from "@/emails/email-verification"
-import DeleteAccountVerificationEmail from "@/emails/delete-account-verification"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
