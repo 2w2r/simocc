@@ -12,6 +12,7 @@ import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
+import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 export function DeleteAccountContent() {
   const [isConfirming, setIsConfirming] = useState(false)
@@ -49,7 +50,7 @@ export function DeleteAccountContent() {
 
     if (error) {
       setErrors({
-        general: error.message ?? "Something went wrong. Please try again.",
+        general: ensurePeriod(error.message ?? "Something went wrong. Please try again."),
       })
       setLoading(false)
       return

@@ -31,6 +31,7 @@ import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
+import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 interface SimbriefFormProps {
   currentPilotId: string | null
@@ -131,7 +132,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
     clearTimeout(timeoutId)
 
     if (error) {
-      setErrors({ general: error ?? "Something went wrong. Please try again." })
+      setErrors({ general: ensurePeriod(error ?? "Something went wrong. Please try again.") })
       setLoading(false)
       return
     }

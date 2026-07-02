@@ -17,6 +17,7 @@ import {
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
+import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("")
@@ -91,7 +92,7 @@ export function ChangePasswordForm() {
         general:
           error.code === "INVALID_PASSWORD"
             ? "Current password is incorrect."
-            : (error.message ?? "Something went wrong. Please try again."),
+            : ensurePeriod(error.message ?? "Something went wrong. Please try again."),
       })
       setLoading(false)
       return

@@ -13,6 +13,7 @@ import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
+import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 interface ChangeNameFormProps {
   currentName: string
@@ -72,7 +73,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
 
     if (error) {
       setErrors({
-        general: error.message ?? "Something went wrong. Please try again.",
+        general: ensurePeriod(error.message ?? "Something went wrong. Please try again."),
       })
       setLoading(false)
       return
