@@ -11,6 +11,7 @@ export async function saveSimbriefPilotId(
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return { error: "Not authenticated." }
 
+  // Handle first-time save (no UserPreferences row yet) and subsequent updates with upsert to avouid separate create/update paths
   await prisma.userPreferences.upsert({
     where: { userId: session.user.id },
     update: { simbriefPilotId: pilotId },

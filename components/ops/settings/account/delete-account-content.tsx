@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import { Check, RotateCcw, X } from "lucide-react"
 
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
@@ -11,7 +12,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 export function DeleteAccountContent() {
@@ -50,12 +50,15 @@ export function DeleteAccountContent() {
 
     if (error) {
       setErrors({
-        general: ensurePeriod(error.message ?? "Something went wrong. Please try again."),
+        general: ensurePeriod(
+          error.message ?? "Something went wrong. Please try again."
+        ),
       })
       setLoading(false)
       return
     }
 
+    // Submitted state sets ui on a valid account deletion request to a retry option to allow the user to re-request if necessary (e.g., no link received, etc.)
     setSubmitted(true)
     setLoading(false)
   }
@@ -122,11 +125,12 @@ export function DeleteAccountContent() {
         {errors.general && (
           <StatusMessage variant="error" text={errors.general} />
         )}
-        {submitted && (
-          <StatusMessage variant="info" text="Check your inbox." />
-        )}
+        {submitted && <StatusMessage variant="info" text="Check your inbox." />}
         {isConfirming && (
-          <SettingsDescription loading={loading} message="An account deletion link will be sent." />
+          <SettingsDescription
+            loading={loading}
+            message="An account deletion link will be sent."
+          />
         )}
       </Field>
     </FieldGroup>

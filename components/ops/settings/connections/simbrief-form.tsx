@@ -2,23 +2,16 @@
 
 import { useState } from "react"
 
-import {
-  Check,
-  Plus,
-  Unlink,
-  X,
-} from "lucide-react"
+import { Check, Plus, Unlink, X } from "lucide-react"
 
 import {
   removeSimbriefPilotId,
   saveSimbriefPilotId,
 } from "@/components/ops/settings/connections/actions"
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -29,8 +22,6 @@ import {
 } from "@/components/ui/tooltip"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { StatusMessage } from "@/components/ops/settings/status-message"
-import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 interface SimbriefFormProps {
@@ -38,6 +29,7 @@ interface SimbriefFormProps {
 }
 
 export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
+  // Keep the saved database value pilotId separate from the controlled input draftPilotId while editing so a failed save doesn't overwrite the display
   const [pilotId, setPilotId] = useState(currentPilotId)
   const [draftPilotId, setDraftPilotId] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -132,7 +124,11 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
     clearTimeout(timeoutId)
 
     if (error) {
-      setErrors({ general: ensurePeriod(error ?? "Something went wrong. Please try again.") })
+      setErrors({
+        general: ensurePeriod(
+          error ?? "Something went wrong. Please try again."
+        ),
+      })
       setLoading(false)
       return
     }
@@ -195,10 +191,16 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                     <StatusMessage variant="error" text={errors.general} />
                   )}
                   {saved && (
-                    <StatusMessage variant="success" text="SimBrief Pilot ID saved." />
+                    <StatusMessage
+                      variant="success"
+                      text="SimBrief Pilot ID saved."
+                    />
                   )}
                   {removed && (
-                    <StatusMessage variant="info" text="SimBrief Pilot ID removed." />
+                    <StatusMessage
+                      variant="info"
+                      text="SimBrief Pilot ID removed."
+                    />
                   )}
                 </div>
                 {!pilotId && (
@@ -251,7 +253,10 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                     }}
                   />
                   {(errors.draftPilotId || errors.general) && (
-                    <StatusMessage variant="error" text={errors.draftPilotId || errors.general} />
+                    <StatusMessage
+                      variant="error"
+                      text={errors.draftPilotId || errors.general}
+                    />
                   )}
                 </div>
                 <Button
@@ -278,9 +283,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
               </>
             )}
           </div>
-          {loading && (
-            <SettingsDescription loading={loading} message="" />
-          )}
+          {loading && <SettingsDescription loading={loading} message="" />}
         </Field>
       </FieldGroup>
     </form>

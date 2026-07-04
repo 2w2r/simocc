@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { Check, RotateCcw, SquarePen, X } from "lucide-react"
 
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
@@ -13,7 +14,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 interface ChangeEmailCardProps {
@@ -30,6 +30,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
 
+  // Change email with a verification link via Better Auth using a callbackURL which appends ?changed=email. The useEffect cleans the param from the URL and triggers the success state for a visual confirmation.
   useEffect(() => {
     if (searchParams.get("changed") === "email") {
       setEmailChanged(true)
@@ -81,12 +82,15 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
 
     if (error) {
       setErrors({
-        general: ensurePeriod(error.message ?? "Something went wrong. Please try again."),
+        general: ensurePeriod(
+          error.message ?? "Something went wrong. Please try again."
+        ),
       })
       setLoading(false)
       return
     }
 
+    // Submitted state sets ui on a valid change attempt to a retry option to allow the user to re-enter the email if necessary (e.g., typo noticed, no link received, etc.).
     setSubmitted(true)
     setLoading(false)
   }
@@ -157,11 +161,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                       variant={loading ? "ghost" : "default"}
                       disabled={loading || submitted}
                     >
-                      {!loading ? (
-                        <Check />
-                      ) : (
-                        <Spinner className="size-5" />
-                      )}
+                      {!loading ? <Check /> : <Spinner className="size-5" />}
                     </Button>
                     <Button
                       type="button"
@@ -213,7 +213,10 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                 <StatusMessage variant="info" text="Check your inbox." />
               )}
               {isEditing && !submitted && (
-                <SettingsDescription loading={loading} message="A verification link will be sent." />
+                <SettingsDescription
+                  loading={loading}
+                  message="A verification link will be sent."
+                />
               )}
             </>
           )}

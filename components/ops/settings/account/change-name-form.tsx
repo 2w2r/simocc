@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import { Check, SquarePen, X } from "lucide-react"
 
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
@@ -12,7 +13,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 interface ChangeNameFormProps {
@@ -26,6 +26,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
   const [loading, setLoading] = useState(false)
   const [nameChanged, setNameChanged] = useState(false)
 
+  // Read name from live session with currentName as a fallback to update the display immediately after updateUser without a page reload
   const { data: session } = authClient.useSession()
   const name = session?.user.name ?? currentName
 
@@ -35,6 +36,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
 
     const trimmed = newName.trim()
 
+    // Prevent no-op request with trimmed === name client-side guard as updateUser has no server-side sameness rejection
     const validationErrors: Record<string, string> = {}
     if (!trimmed) validationErrors.newName = "Please enter a display name."
     else if (trimmed === name)
@@ -73,7 +75,9 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
 
     if (error) {
       setErrors({
-        general: ensurePeriod(error.message ?? "Something went wrong. Please try again."),
+        general: ensurePeriod(
+          error.message ?? "Something went wrong. Please try again."
+        ),
       })
       setLoading(false)
       return
@@ -122,8 +126,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                   disabled={loading}
                   className={cn(
                     "text-sm min-w-8",
-                    (errors.newName || errors.general) &&
-                    "border-destructive"
+                    (errors.newName || errors.general) && "border-destructive"
                   )}
                   value={newName}
                   onChange={(e) => {
@@ -169,9 +172,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
               text={errors.newName || errors.general}
             />
           )}
-          {loading && (
-            <SettingsDescription loading={loading} message="" />
-          )}
+          {loading && <SettingsDescription loading={loading} message="" />}
           {nameChanged && !isEditing && (
             <StatusMessage variant="success" text="Display name updated." />
           )}

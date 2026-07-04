@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { Check, SquarePen, X } from "lucide-react"
 
+import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { StatusMessage } from "@/components/ops/settings/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
@@ -16,7 +17,6 @@ import {
   PASSWORD_MIN_LENGTH,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { SettingsDescription } from "@/components/ops/settings/settings-description"
 import { ensurePeriod } from "@/lib/utils/ensure-period"
 
 export function ChangePasswordForm() {
@@ -76,6 +76,7 @@ export function ChangePasswordForm() {
       })
     }, AUTH_TIMEOUT_MS)
 
+    // Do not revoke other sessions with revokeOtherSessions: false as password change is from an authenticated session unlike account recovery
     const [{ error }] = await Promise.all([
       authClient.changePassword({
         currentPassword,
@@ -92,7 +93,9 @@ export function ChangePasswordForm() {
         general:
           error.code === "INVALID_PASSWORD"
             ? "Current password is incorrect."
-            : ensurePeriod(error.message ?? "Something went wrong. Please try again."),
+            : ensurePeriod(
+              error.message ?? "Something went wrong. Please try again."
+            ),
       })
       setLoading(false)
       return
@@ -110,9 +113,7 @@ export function ChangePasswordForm() {
           {!isEditing ? (
             <div className="flex flex-row flex-nowrap justify-baseline gap-2 @max-[8rem]:flex-wrap">
               <div className="text-sm h-8 w-full min-w-8 px-2.5 flex items-center rounded-lg border border-transparent bg-input dark:bg-input/30">
-                <span className="text-3xl overflow-hidden">
-                  ••••••••••••
-                </span>
+                <span className="text-3xl overflow-hidden">••••••••••••</span>
               </div>
               <Button
                 type="button"
@@ -168,10 +169,7 @@ export function ChangePasswordForm() {
                   )}
                 />
                 {errors.newPassword && (
-                  <StatusMessage
-                    variant="error"
-                    text={errors.newPassword}
-                  />
+                  <StatusMessage variant="error" text={errors.newPassword} />
                 )}
               </Field>
               <Field>
@@ -231,7 +229,10 @@ export function ChangePasswordForm() {
                   <StatusMessage variant="error" text={errors.general} />
                 )}
                 {isEditing && (
-                  <SettingsDescription loading={loading} message="Enter your current and new password." />
+                  <SettingsDescription
+                    loading={loading}
+                    message="Enter your current and new password."
+                  />
                 )}
               </Field>
             </div>
