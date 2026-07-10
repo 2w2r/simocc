@@ -106,7 +106,7 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                   <span>{name}</span>
                 </div>
                 <Button
-                  className="aspect-square @max-3xs:grow"
+                  className="aspect-square @max-3xs:grow hover:bg-primary/80"
                   variant="outline"
                   onClick={() => {
                     setIsEditing(true)
@@ -137,9 +137,9 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                 <Button
                   type={!loading ? "submit" : "button"}
                   className={cn(
-                    "aspect-square @max-3xs:grow",
+                    "aspect-square @max-3xs:grow hover:bg-primary/80",
                     loading &&
-                    "text-primary border-border! no-underline! hover:pointer-events-none"
+                    "border-border!"
                   )}
                   variant={loading ? "ghost" : "default"}
                   disabled={loading}
@@ -149,9 +149,9 @@ export function ChangeNameForm({ currentName }: ChangeNameFormProps) {
                 <Button
                   type="button"
                   className={cn(
-                    "aspect-square @max-3xs:grow",
+                    "aspect-square @max-3xs:grow hover:bg-primary/80",
                     loading &&
-                    "text-primary border-border! no-underline! hover:pointer-events-none"
+                    "border-border!"
                   )}
                   variant={loading ? "ghost" : "outline"}
                   disabled={loading}

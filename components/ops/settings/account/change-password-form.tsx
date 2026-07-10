@@ -202,9 +202,9 @@ export function ChangePasswordForm() {
                   <Button
                     type={!loading ? "submit" : "button"}
                     className={cn(
-                      "aspect-square @max-3xs:grow",
+                      "aspect-square @max-3xs:grow hover:bg-primary/80",
                       loading &&
-                      "text-primary border-border! no-underline! hover:pointer-events-none"
+                      "border-border!"
                     )}
                     variant={loading ? "ghost" : "default"}
                     disabled={loading}
@@ -214,9 +214,9 @@ export function ChangePasswordForm() {
                   <Button
                     type="button"
                     className={cn(
-                      "aspect-square @max-3xs:grow",
+                      "aspect-square @max-3xs:grow hover:bg-primary/80",
                       loading &&
-                      "text-primary border-border! no-underline! hover:pointer-events-none"
+                      "border-border!"
                     )}
                     variant={loading ? "ghost" : "outline"}
                     disabled={loading}

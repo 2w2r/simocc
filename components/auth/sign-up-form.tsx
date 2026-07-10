@@ -28,7 +28,9 @@ export function SignUpForm({
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // loading controls UI state during the request;
   const [loading, setLoading] = useState(false)
+  // submitted controls UI state between setLoading(false) and router.push including the post-success delay
   const [submitted, setSubmitted] = useState(false)
   let aborted = false
 
@@ -120,7 +122,10 @@ export function SignUpForm({
             type="text"
             placeholder="Name"
             required
-            className={`text-sm ${errors.name && "border-destructive"}`}
+            className={cn(
+              "text-sm",
+              errors.name && "border-destructive"
+            )}
             value={name}
             onChange={(e) => {
               setName(e.target.value)
@@ -139,7 +144,10 @@ export function SignUpForm({
             type="email"
             placeholder="Email"
             required
-            className={`text-sm ${errors.email && "border-destructive"}`}
+            className={cn(
+              "text-sm",
+              errors.email && "border-destructive"
+            )}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)
@@ -159,7 +167,10 @@ export function SignUpForm({
             autoComplete="off"
             placeholder="Password"
             required
-            className={`text-sm ${(errors.password || errors.confirm) && "border-destructive"}`}
+            className={cn(
+              "text-sm",
+              (errors.password || errors.confirm) && "border-destructive"
+            )}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value)
@@ -183,7 +194,10 @@ export function SignUpForm({
             autoComplete="new-password"
             placeholder="Confirm password"
             required
-            className={`text-sm ${(errors.password || errors.confirm) && "border-destructive"}`}
+            className={cn(
+              "text-sm",
+              (errors.password || errors.confirm) && "border-destructive"
+            )}
             value={confirm}
             onChange={(e) => {
               setConfirm(e.target.value)
@@ -202,11 +216,10 @@ export function SignUpForm({
             className={cn(
               "hover:bg-primary/80",
               (loading || submitted) &&
-                "text-primary border-border! no-underline!",
-              loading && "hover:pointer-events-none"
+              "border-border!"
             )}
-            variant={loading ? "ghost" : "default"}
-            disabled={loading}
+            variant={(loading || submitted) ? "ghost" : "default"}
+            disabled={(loading || submitted)}
           >
             {!loading ? <span>Sign up</span> : <Spinner className="size-5" />}
           </Button>
@@ -221,7 +234,7 @@ export function SignUpForm({
                 <span>Already a user?</span>
                 <a
                   href="/sign-in"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Sign in
                 </a>
@@ -229,7 +242,7 @@ export function SignUpForm({
             ) : loading && !submitted ? (
               <span>Processing . . .</span>
             ) : (
-              <span>Redirecting to dashbaord . . .</span>
+              <span>Redirecting to dashboard . . .</span>
             )}
           </FieldDescription>
         </Field>

@@ -33,7 +33,7 @@ export function AccountDeletedContent({
           <span>Want a new account?</span>
           <a
             href="/sign-up"
-            className="text-primary no-underline! hover:underline!"
+            className="form-link"
           >
             Sign up
           </a>

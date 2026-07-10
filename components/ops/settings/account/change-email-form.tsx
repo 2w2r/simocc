@@ -115,7 +115,7 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                   <span>{currentEmail}</span>
                 </div>
                 <Button
-                  className="aspect-square @max-3xs:grow"
+                  className="aspect-square @max-3xs:grow hover:bg-primary/80"
                   variant="outline"
                   onClick={() => {
                     setIsEditing(true)
@@ -154,9 +154,9 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                     <Button
                       type={!loading ? "submit" : "button"}
                       className={cn(
-                        "aspect-square @max-3xs:grow",
+                        "aspect-square @max-3xs:grow hover:bg-primary/80",
                         loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                        "border-border!"
                       )}
                       variant={loading ? "ghost" : "default"}
                       disabled={loading || submitted}
@@ -166,9 +166,9 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                     <Button
                       type="button"
                       className={cn(
-                        "aspect-square @max-3xs:grow",
+                        "aspect-square @max-3xs:grow hover:bg-primary/80",
                         loading &&
-                        "text-primary border-border! no-underline! hover:pointer-events-none"
+                        "border-border!"
                       )}
                       variant={loading ? "ghost" : "outline"}
                       disabled={loading || submitted}
@@ -185,9 +185,9 @@ export function ChangeEmailForm({ currentEmail }: ChangeEmailCardProps) {
                 {submitted && (
                   <Button
                     className={cn(
-                      "aspect-square @max-3xs:grow",
+                      "aspect-square @max-3xs:grow hover:bg-primary/80",
                       loading &&
-                      "text-primary border-border! no-underline! hover:pointer-events-none"
+                      "border-border!"
                     )}
                     disabled={loading}
                     variant={loading ? "ghost" : "outline"}

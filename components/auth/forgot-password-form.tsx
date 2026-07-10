@@ -17,7 +17,9 @@ export function ForgotPasswordForm({
 }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // loading controls UI state during the request
   const [loading, setLoading] = useState(false)
+  // submitted controls UI state after a successful request
   const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -94,10 +96,9 @@ export function ForgotPasswordForm({
             className={cn(
               "hover:bg-primary/80",
               (loading || submitted) &&
-              "text-primary border-border! no-underline!",
-              loading && "hover:pointer-events-none"
+              "border-border!"
             )}
-            variant={loading || submitted ? "ghost" : "default"}
+            variant={(loading || submitted) ? "ghost" : "default"}
             disabled={loading}
           >
             {!loading && !submitted ? (
@@ -105,7 +106,7 @@ export function ForgotPasswordForm({
             ) : loading && !submitted ? (
               <Spinner className="size-5" />
             ) : (
-              <a href="/sign-in">Return to sign-in</a>
+              <a href="/sign-in" className="form-link">Return to sign-in</a>
             )}
           </Button>
           {errors.general && (
@@ -119,7 +120,7 @@ export function ForgotPasswordForm({
                 <span>Remember password?</span>
                 <a
                   href="/sign-in"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Sign in
                 </a>
@@ -131,7 +132,7 @@ export function ForgotPasswordForm({
                 <span>No success?</span>
                 <a
                   href="/forgot-password"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Try again
                 </a>

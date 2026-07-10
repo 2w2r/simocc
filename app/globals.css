@@ -130,4 +130,7 @@
   html {
     @apply font-sans;
   }
+  .form-link {
+    @apply text-primary no-underline! hover:underline!;
+  }
 }

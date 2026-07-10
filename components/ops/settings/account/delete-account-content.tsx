@@ -70,7 +70,7 @@ export function DeleteAccountContent() {
           <Button
             type="button"
             variant={!isConfirming ? "destructive" : "secondary"}
-            className="w-full shrink"
+            className="w-full shrink hover:bg-primary/80"
             disabled={isConfirming || loading || submitted}
             onClick={() => setIsConfirming(true)}
           >
@@ -81,9 +81,9 @@ export function DeleteAccountContent() {
               <Button
                 type="button"
                 className={cn(
-                  "aspect-square @max-3xs:grow",
+                  "aspect-square @max-3xs:grow hover:bg-primary/80",
                   loading &&
-                  "text-primary border-border! no-underline! hover:pointer-events-none"
+                  "border-border!"
                 )}
                 variant={loading ? "ghost" : "destructive"}
                 disabled={loading}
@@ -94,9 +94,9 @@ export function DeleteAccountContent() {
               <Button
                 type="button"
                 className={cn(
-                  "aspect-square @max-3xs:grow",
+                  "aspect-square @max-3xs:grow hover:bg-primary/80",
                   loading &&
-                  "text-primary border-border! no-underline! hover:pointer-events-none"
+                  "border-border!"
                 )}
                 variant={loading ? "ghost" : "outline"}
                 disabled={loading}
@@ -112,7 +112,7 @@ export function DeleteAccountContent() {
           {submitted && (
             <Button
               type="button"
-              className="aspect-square @max-3xs:grow"
+              className="aspect-square @max-3xs:grow hover:bg-primary/80"
               variant="outline"
               onClick={() => {
                 setSubmitted(false)

@@ -26,7 +26,9 @@ export function ResetPasswordForm({
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // loading controls UI state during the request
   const [loading, setLoading] = useState(false)
+  // submitted controls UI state between setLoading(false) and router.push including the post-success delay
   const [submitted, setSubmitted] = useState(false)
 
   let aborted = false
@@ -168,11 +170,10 @@ export function ResetPasswordForm({
             className={cn(
               "hover:bg-primary/80",
               (loading || submitted) &&
-              "text-primary border-border! no-underline!",
-              loading && "hover:pointer-events-none"
+              "border-border!"
             )}
-            variant={loading ? "ghost" : "default"}
-            disabled={loading}
+            variant={(loading || submitted) ? "ghost" : "default"}
+            disabled={(loading || submitted)}
           >
             {!loading && !submitted ? (
               <span>Reset</span>
@@ -192,7 +193,7 @@ export function ResetPasswordForm({
                 <span>Need a new link?</span>
                 <a
                   href="/forgot-password"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Request one
                 </a>
@@ -202,7 +203,7 @@ export function ResetPasswordForm({
                 <span>Remember password?</span>
                 <a
                   href="/sign-in"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Sign in
                 </a>

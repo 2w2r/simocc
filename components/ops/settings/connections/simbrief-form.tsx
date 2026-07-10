@@ -84,7 +84,9 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
 
     if (error) {
       setErrors({
-        general: error ?? "Something went wrong. Please try again.",
+        general: ensurePeriod(
+          error ?? "Something went wrong. Please try again."
+        ),
       })
       setLoading(false)
       return
@@ -205,17 +207,14 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                 </div>
                 {!pilotId && (
                   <Button
-                    className={cn(
-                      "aspect-square",
-                      pilotId ? "@max-2xs:grow" : "@max-3xs:grow"
-                    )}
+                    className="aspect-square @max-3xs:grow hover:bg-primary/80"
                     variant="outline"
                     onClick={() => {
                       setIsEditing(true)
                       setSaved(false)
                       setRemoved(false)
                       setErrors({})
-                      setDraftPilotId(pilotId ?? "")
+                      setDraftPilotId("")
                     }}
                   >
                     <Plus />
@@ -223,7 +222,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                 )}
                 {pilotId && (
                   <Button
-                    className="aspect-square @max-2xs:grow"
+                    className="aspect-square @max-2xs:grow hover:bg-primary/80"
                     variant="outline"
                     onClick={handleRemove}
                     disabled={loading}
@@ -261,7 +260,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                 </div>
                 <Button
                   type={!loading ? "submit" : "button"}
-                  className="aspect-square @max-2xs:grow"
+                  className="aspect-square @max-2xs:grow hover:bg-primary/80"
                   variant={loading ? "ghost" : "default"}
                   disabled={loading}
                 >
@@ -269,7 +268,7 @@ export function SimbriefForm({ currentPilotId }: SimbriefFormProps) {
                 </Button>
                 <Button
                   type="button"
-                  className="aspect-square @max-2xs:grow"
+                  className="aspect-square @max-2xs:grow hover:bg-primary/80"
                   variant={loading ? "ghost" : "outline"}
                   disabled={loading}
                   onClick={() => {

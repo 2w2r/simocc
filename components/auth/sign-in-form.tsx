@@ -21,7 +21,9 @@ export function SignInForm({
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // loading controls UI state for the request processing time
   const [loading, setLoading] = useState(false)
+  // submitted controls UI state between setLoading(false) and router.push including the post-success delay
   const [submitted, setSubmitted] = useState(false)
   let aborted = false
 
@@ -141,7 +143,7 @@ export function SignInForm({
             <span>Forgot password?</span>
             <a
               href="/forgot-password"
-              className="text-primary no-underline! hover:underline!"
+              className="form-link"
             >
               Reset
             </a>
@@ -153,11 +155,10 @@ export function SignInForm({
             className={cn(
               "hover:bg-primary/80",
               (loading || submitted) &&
-              "text-primary border-border! no-underline!",
-              loading && "hover:pointer-events-none"
+              "border-border!"
             )}
-            variant={loading ? "ghost" : "default"}
-            disabled={loading}
+            variant={(loading || submitted) ? "ghost" : "default"}
+            disabled={(loading || submitted)}
           >
             {!loading ? <span>Sign in</span> : <Spinner className="size-5" />}
           </Button>
@@ -172,7 +173,7 @@ export function SignInForm({
                 <span>Not yet a user?</span>
                 <a
                   href="/sign-up"
-                  className="text-primary no-underline! hover:underline!"
+                  className="form-link"
                 >
                   Sign up
                 </a>
