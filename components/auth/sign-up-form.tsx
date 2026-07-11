@@ -3,8 +3,6 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import { CircleAlert } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -17,6 +15,7 @@ import {
   PASSWORD_MIN_LENGTH,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 export function SignUpForm({
   className,
@@ -133,9 +132,7 @@ export function SignUpForm({
             }}
           />
           {errors.name && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.name}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.name} />
           )}
         </Field>
         <Field>
@@ -155,9 +152,7 @@ export function SignUpForm({
             }}
           />
           {errors.email && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.email}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.email} />
           )}
         </Field>
         <Field>
@@ -182,9 +177,7 @@ export function SignUpForm({
             }}
           />
           {errors.password && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.password}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.password} />
           )}
         </Field>
         <Field>
@@ -205,9 +198,7 @@ export function SignUpForm({
             }}
           />
           {errors.confirm && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.confirm}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.confirm} />
           )}
         </Field>
         <Field>
@@ -224,9 +215,7 @@ export function SignUpForm({
             {!loading ? <span>Sign up</span> : <Spinner className="size-5" />}
           </Button>
           {errors.general && !submitted && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.general}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.general} />
           )}
           <FieldDescription className="text-center flex flex-wrap justify-end gap-2">
             {!loading && !submitted ? (

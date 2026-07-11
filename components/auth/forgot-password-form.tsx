@@ -1,8 +1,6 @@
 "use client"
 import { useState } from "react"
 
-import { CircleAlert, Info } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -10,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 export function ForgotPasswordForm({
   className,
@@ -80,14 +79,10 @@ export function ForgotPasswordForm({
             }}
           />
           {errors.email && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.email}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.email} />
           )}
           {submitted && (
-            <FieldDescription className="flex gap-2 items-center text-blue-500">
-              <Info className="size-4" /> <span>Check your inbox.</span>
-            </FieldDescription>
+            <StatusMessage variant="info" text="Check your inbox." />
           )}
         </Field>
         <Field>
@@ -110,9 +105,7 @@ export function ForgotPasswordForm({
             )}
           </Button>
           {errors.general && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.general}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.general} />
           )}
           <FieldDescription className="text-center flex flex-wrap justify-end gap-2">
             {!loading && !submitted ? (

@@ -3,8 +3,6 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import { CircleAlert } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -12,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { AUTH_TIMEOUT_MS, MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 export function SignInForm({
   className,
@@ -116,9 +115,7 @@ export function SignInForm({
             }}
           />
           {errors.email && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.email}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.email} />
           )}
         </Field>
         <Field>
@@ -135,9 +132,7 @@ export function SignInForm({
             }}
           />
           {errors.invalid && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.invalid}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.invalid} />
           )}
           <FieldDescription className="text-center flex flex-wrap justify-end gap-2">
             <span>Forgot password?</span>
@@ -163,9 +158,7 @@ export function SignInForm({
             {!loading ? <span>Sign in</span> : <Spinner className="size-5" />}
           </Button>
           {errors.general && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.general}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.general} />
           )}
           <FieldDescription className="text-center flex flex-wrap justify-end gap-2">
             {!loading && !submitted ? (

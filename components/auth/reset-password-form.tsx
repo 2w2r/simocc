@@ -3,8 +3,6 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import { CircleAlert, CircleCheck } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -17,6 +15,7 @@ import {
   PASSWORD_MIN_LENGTH,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 export function ResetPasswordForm({
   className,
@@ -131,9 +130,7 @@ export function ResetPasswordForm({
             }}
           />
           {errors.password && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.password}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.password} />
           )}
         </Field>
         <Field>
@@ -153,15 +150,10 @@ export function ResetPasswordForm({
             }}
           />
           {errors.confirm && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" /> <span>{errors.confirm}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.confirm} />
           )}
           {submitted && (
-            <FieldDescription className="flex gap-2 items-center text-green-500">
-              <CircleCheck className="size-4" />{" "}
-              <span>Password reset successful.</span>
-            </FieldDescription>
+            <StatusMessage variant="success" text="Password reset successful." />
           )}
         </Field>
         <Field>
@@ -182,10 +174,7 @@ export function ResetPasswordForm({
             )}
           </Button>
           {(errors.invalid || errors.general) && (
-            <FieldDescription className="flex gap-2 items-center text-destructive">
-              <CircleAlert className="size-4" />{" "}
-              <span>{errors.invalid || errors.general}</span>
-            </FieldDescription>
+            <StatusMessage variant="error" text={errors.invalid || errors.general} />
           )}
           <FieldDescription className="text-center flex flex-wrap justify-end gap-2">
             {errors.invalid ? (

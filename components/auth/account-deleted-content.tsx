@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation"
 
-import { CircleCheck } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
+import { StatusMessage } from "@/components/ops/settings/status-message"
 
 export function AccountDeletedContent({
   className,
@@ -16,10 +15,7 @@ export function AccountDeletedContent({
   return (
     <FieldGroup>
       <Field>
-        <FieldDescription className="flex gap-2 items-center text-green-500">
-          <CircleCheck className="size-4" />{" "}
-          <span>Account deleted successfully.</span>
-        </FieldDescription>
+        <StatusMessage variant="success" text="Account deleted successfully." />
       </Field>
       <Field>
         <Button
