@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
-import { StatusMessage } from "@/components/ops/settings/status-message"
+import { StatusMessage } from "@/components/ui/status-message"
 
 export function AccountDeletedContent({
   className,

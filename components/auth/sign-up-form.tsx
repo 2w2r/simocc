@@ -15,7 +15,7 @@ import {
   PASSWORD_MIN_LENGTH,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { StatusMessage } from "@/components/ops/settings/status-message"
+import { StatusMessage } from "@/components/ui/status-message"
 
 export function SignUpForm({
   className,

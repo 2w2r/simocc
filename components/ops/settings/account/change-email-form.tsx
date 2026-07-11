@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Check, RotateCcw, SquarePen, X } from "lucide-react"
 
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
-import { StatusMessage } from "@/components/ops/settings/status-message"
+import { StatusMessage } from "@/components/ui/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"

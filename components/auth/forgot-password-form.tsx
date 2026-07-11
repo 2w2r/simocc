@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { authClient } from "@/lib/auth-client"
 import { MIN_LOADING_DELAY_MS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { StatusMessage } from "@/components/ops/settings/status-message"
+import { StatusMessage } from "@/components/ui/status-message"
 
 export function ForgotPasswordForm({
   className,

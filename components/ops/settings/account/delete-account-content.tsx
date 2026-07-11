@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Check, RotateCcw, X } from "lucide-react"
 
 import { SettingsDescription } from "@/components/ops/settings/settings-description"
-import { StatusMessage } from "@/components/ops/settings/status-message"
+import { StatusMessage } from "@/components/ui/status-message"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
