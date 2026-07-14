@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 
-import { LayoutGrid, Unplug, UserRound } from "lucide-react"
+import { LayoutGrid, Plane, Unplug, UserRound } from "lucide-react"
 
 export const APP_NAME = "SIMOCC"
 export const APP_DESCRIPTION = "(Flight) Simulation Operations Control Centre"
@@ -34,6 +34,9 @@ type SettingsNavItem = {
 export const OPSNAV = {
   main: [
     { title: "Dashboard", url: "/dashboard", icon: LayoutGrid, enabled: true },
+  ],
+  data: [
+    { title: "Fleet", url: "/fleet", icon: Plane, enabled: true },
   ],
 } as const
 
