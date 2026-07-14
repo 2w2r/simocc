@@ -81,3 +81,13 @@ model UserPreferences {
   user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   simbriefPilotId String?
 }
+
+model OperatorReference {
+  id        String  @id @default(cuid())
+  sourceId  Int     @unique
+  icaoCode  String?
+  iataCode  String?
+  name      String
+  callsign  String?
+  country   String?
+}
