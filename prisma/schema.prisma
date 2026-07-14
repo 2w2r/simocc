@@ -23,6 +23,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   preferences   UserPreferences?
+  aircraft Aircraft[]
 
   @@unique([email])
   @@map("user")
@@ -90,4 +91,19 @@ model OperatorReference {
   name      String
   callsign  String?
   country   String?
+  aircraft Aircraft[]
+}
+
+model Aircraft {
+  id           String             @id @default(cuid())
+  userId       String
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registration String
+  icaoCode     String
+  operatorSourceId   Int?
+  operator     OperatorReference? @relation(fields: [operatorSourceId], references: [sourceId])
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([userId, registration, operatorSourceId, icaoCode])
 }
