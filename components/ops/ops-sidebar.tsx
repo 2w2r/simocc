@@ -76,29 +76,31 @@ export function OpsSidebar({
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
-              <Separator
-                orientation="horizontal"
-                className="my-2 group-data-[state=expanded]:collapse"
-              />
-              {/* TODO: further sidebar menus */}
-              <SidebarGroupLabel className="mt-2 group-data-[collapsible=icon]:collapse">
-                Data
-              </SidebarGroupLabel>
-              <SidebarMenu>
-                {OPSNAV.data.filter((r) => r.enabled).map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              {!isSettings && <>
+                {/* TODO: further sidebar menus */}
+                <Separator
+                  orientation="horizontal"
+                  className="my-2 group-data-[state=expanded]:collapse"
+                />
+                <SidebarGroupLabel className="mt-2 group-data-[collapsible=icon]:collapse">
+                  Data
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                  {OPSNAV.data.filter((r) => r.enabled).map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <a href={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </>
+              }
             </SidebarGroupContent>
           </SidebarGroup>
-          {/* TODO: further sidebar groups */}
         </SidebarContent>
       </div>
       <SidebarFooter>{navUser}</SidebarFooter>
