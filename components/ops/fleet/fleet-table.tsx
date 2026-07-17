@@ -1,11 +1,13 @@
 "use client"
 
 import {
+  ColumnFiltersState,
   OnChangeFn,
   RowSelectionState,
   SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
@@ -22,6 +24,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+const SORTING_STORAGE_KEY = "fleet-sorting"
+const FILTERS_STORAGE_KEY = "fleet-filters"
+
 export function FleetTable({
   data,
   onSelectionChange,
@@ -33,39 +38,51 @@ export function FleetTable({
 }) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [sorting, setSorting] = useState<SortingState | null>(null)
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    if (typeof window === "undefined") return []
+    const saved = localStorage.getItem(FILTERS_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  })
 
-  const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
-    setSorting((prev) => {
-      const prevSorting = prev ?? []
-      return typeof updaterOrValue === "function"
-        ? updaterOrValue(prevSorting)
-        : updaterOrValue
-    })
-  }
   useEffect(() => {
-    const saved = localStorage.getItem("fleet-sorting")
+    const saved = localStorage.getItem(SORTING_STORAGE_KEY)
     setSorting(saved ? JSON.parse(saved) : [])
   }, [])
 
   useEffect(() => {
     if (sorting !== null) {
-      localStorage.setItem("fleet-sorting", JSON.stringify(sorting))
+      localStorage.setItem(SORTING_STORAGE_KEY, JSON.stringify(sorting))
     }
   }, [sorting])
+
+  useEffect(() => {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(columnFilters))
+  }, [columnFilters])
+
+  useEffect(() => {
+    setRowSelection({})
+  }, [resetKey])
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    setSorting((previousSorting) => {
+      const current = previousSorting ?? []
+      return typeof updaterOrValue === "function"
+        ? updaterOrValue(current)
+        : updaterOrValue
+    })
+  }
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: handleSortingChange,
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: handleSortingChange,
     onRowSelectionChange: setRowSelection,
-    state: { sorting: sorting ?? [], rowSelection },
+    onColumnFiltersChange: setColumnFilters,
+    state: { sorting: sorting ?? [], rowSelection, columnFilters },
   })
-
-  useEffect(() => {
-    setRowSelection({})
-  }, [resetKey])
 
   useEffect(() => {
     const ids = table.getSelectedRowModel().rows.map((row) => row.original.id)
@@ -73,6 +90,7 @@ export function FleetTable({
   }, [rowSelection])
 
   if (sorting === null) return null
+
   return (
     <div className="overflow-hidden rounded-md border">
       <Table className="table-fixed">
@@ -87,9 +105,9 @@ export function FleetTable({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                 </TableHead>
               ))}
             </TableRow>
