@@ -92,11 +92,13 @@ export async function searchOperators(query: string) {
   if (!query || query.length < 1) return []
 
   const upper = query.toUpperCase().trim()
+  const excludePrivate = { sourceId: { not: -1 } }
 
   if (upper.includes("/")) {
     const [icaoPart, iataPart] = upper.split("/").map((s) => s.trim())
     return prisma.operatorReference.findMany({
       where: {
+        ...excludePrivate,
         AND: [
           ...(icaoPart ? [{ icaoCode: { contains: icaoPart } }] : []),
           ...(iataPart ? [{ iataCode: { contains: iataPart } }] : []),
@@ -108,6 +110,7 @@ export async function searchOperators(query: string) {
 
   const codeMatches = await prisma.operatorReference.findMany({
     where: {
+      ...excludePrivate,
       OR: [
         { icaoCode: { contains: upper } },
         { iataCode: { contains: upper } },
@@ -126,6 +129,7 @@ export async function searchOperators(query: string) {
 
   const nameMatches = await prisma.operatorReference.findMany({
     where: {
+      ...excludePrivate,
       name: { contains: query, mode: "insensitive" },
       id: { notIn: [...codeMatchIds] },
     },
@@ -144,4 +148,10 @@ export async function searchOperators(query: string) {
   }
 
   return results
+}
+
+export async function getPrivateOperator() {
+  return prisma.operatorReference.findUnique({
+    where: { sourceId: -1 },
+  })
 }

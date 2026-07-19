@@ -100,7 +100,23 @@ async function main() {
     seeded++;
   }
 
-  console.log(`Seeded ${seeded} operators, skipped ${skipped} (no usable id/code).`);
+  await prisma.operatorReference.upsert({
+    where: { sourceId: -1 },
+    create: {
+      sourceId: -1,
+      icaoCode: null,
+      iataCode: null,
+      name: "Private",
+      callsign: null,
+      country: null,
+    },
+    update: {
+      name: "Private",
+    },
+  })
+
+  console.log(`Seeded ${seeded} operators, skipped ${skipped} (no usable id/code).`)
+  console.log("Upserted Private operator.")
 }
 
 main()

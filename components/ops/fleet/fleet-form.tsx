@@ -4,7 +4,11 @@ import { useEffect, useState } from "react"
 
 import { Plus, TextSearch } from "lucide-react"
 
-import { addAircraft, searchOperators } from "@/actions/fleet"
+import {
+  addAircraft,
+  getPrivateOperator,
+  searchOperators,
+} from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
 import {
   Combobox,
@@ -30,34 +34,20 @@ type Operator = {
   country: string | null
 }
 
-const NO_OPERATOR: Operator = {
-  id: "none",
-  sourceId: 0,
-  name: "No Operator",
-  icaoCode: null,
-  iataCode: null,
-  callsign: null,
-  country: null,
-}
-
-function formatOperatorCode(operator: Operator): string {
-  if (operator.id === "none") return "———/——"
-  const icao = operator.icaoCode ?? "———"
-  const iata = operator.iataCode ?? "——"
-  return `${icao}/${iata}`
-}
-
 type Errors = {
   registration?: string
   icaoCode?: string
   general?: string
 }
 
+function formatOperatorCode(operator: Operator): string {
+  return `${operator.icaoCode ?? "———"}/${operator.iataCode ?? "——"}`
+}
+
 export function FleetForm({
   deleteButton,
 }: {
   deleteButton?: React.ReactNode
-  deleteSuccess?: boolean
 }) {
   const [registration, setRegistration] = useState("")
   const [icaoCode, setIcaoCode] = useState("")
@@ -66,12 +56,21 @@ export function FleetForm({
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(
     null
   )
+  const [privateOperator, setPrivateOperator] = useState<Operator | null>(null)
   const [errors, setErrors] = useState<Errors>({})
   const [submitting, setSubmitting] = useState(false)
 
   const canSubmit = registration.trim().length > 0 && icaoCode.trim().length > 0
+  const operatorsWithPrivate = [
+    ...operators,
+    ...(privateOperator ? [privateOperator] : []),
+  ]
 
-  const operatorsWithNone = [...operators, NO_OPERATOR]
+  useEffect(() => {
+    getPrivateOperator().then((result) => {
+      if (result) setPrivateOperator(result)
+    })
+  }, [])
 
   useEffect(() => {
     if (operatorQuery.length < 1) {
@@ -93,16 +92,15 @@ export function FleetForm({
     const formData = new FormData()
     formData.set("registration", registration)
     formData.set("icaoCode", icaoCode)
-    if (selectedOperator && selectedOperator.id !== "none") {
-      formData.set("operatorSourceId", selectedOperator.sourceId.toString())
-    }
+    const effectiveOperator = selectedOperator ?? privateOperator
+    if (effectiveOperator)
+      formData.set("operatorSourceId", effectiveOperator.sourceId.toString())
 
     const result = await addAircraft(formData)
 
     if (result?.error) {
       setErrors({ [result.error.field]: result.error.message })
     } else {
-      setErrors({})
       setRegistration("")
       setIcaoCode("")
       setSelectedOperator(null)
@@ -171,8 +169,7 @@ export function FleetForm({
               )}
             </div>
             <Combobox
-              items={operatorsWithNone}
-              filteredItems={operatorsWithNone}
+              items={operatorsWithPrivate}
               itemToStringLabel={(op) =>
                 op.id === "none"
                   ? "—/—  ·  No Operator"

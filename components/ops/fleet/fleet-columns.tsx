@@ -74,7 +74,7 @@ function ColumnHeader({
           >
             <SortIcon sorted={isSorted} />
           </Button>
-          < FleetColumnFilterPopover
+          <FleetColumnFilterPopover
             column={column}
             options={options}
             sortedOptions={sortedOptions}
@@ -112,8 +112,14 @@ function sortAllData(
       aKey = a.icaoCode
       bKey = b.icaoCode
     } else if (activeSort.id === "operator") {
-      aKey = a.operator?.icaoCode ?? a.operator?.iataCode ?? "\uFFFF"
-      bKey = b.operator?.icaoCode ?? b.operator?.iataCode ?? "\uFFFF"
+      aKey =
+        !a.operator?.icaoCode && !a.operator?.iataCode
+          ? "\uFFFF"
+          : (a.operator?.icaoCode ?? a.operator?.iataCode ?? "\uFFFF")
+      bKey =
+        !b.operator?.icaoCode && !b.operator?.iataCode
+          ? "\uFFFF"
+          : (b.operator?.icaoCode ?? b.operator?.iataCode ?? "\uFFFF")
     }
     return activeSort.desc ? bKey.localeCompare(aKey) : aKey.localeCompare(bKey)
   })
@@ -167,7 +173,13 @@ export const columns: ColumnDef<Aircraft>[] = [
     id: "operator",
     accessorFn: (row) =>
       row.operator?.icaoCode ?? row.operator?.iataCode ?? "\uFFFF",
-    filterFn: multiSelectFilter,
+    filterFn: (row, _columnId, filterValues: string[]) => {
+      if (!filterValues?.length) return true
+      const operator = row.original.operator
+      const value =
+        operator?.icaoCode ?? operator?.iataCode ?? operator?.name ?? ""
+      return filterValues.includes(value)
+    },
     header: ({ column, table }) => {
       const allData = table.options.data as Aircraft[]
       const sortedData = sortAllData(allData, table.getState().sorting)
