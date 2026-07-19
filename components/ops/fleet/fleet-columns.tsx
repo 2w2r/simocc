@@ -56,29 +56,33 @@ function ColumnHeader({
   return (
     <div className="flex items-center gap-1">
       <span className="text-sm font-medium">{label}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn("size-7 -mr-2", isSorted && "text-primary")}
-        onClick={() => {
-          if (!isSorted) {
-            column.toggleSorting(false)
-          } else if (isSorted === "asc") {
-            column.toggleSorting(true)
-          } else {
-            column.clearSorting()
-          }
-        }}
-      >
-        <SortIcon sorted={isSorted} />
-      </Button>
-      <FleetColumnFilterPopover
-        column={column}
-        options={options}
-        sortedOptions={sortedOptions}
-        maxLength={maxLength}
-        operatorOptions={operatorOptions}
-      />
+      {!!options?.length && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("size-7 -mr-2", isSorted && "text-primary")}
+            onClick={() => {
+              if (!isSorted) {
+                column.toggleSorting(false)
+              } else if (isSorted === "asc") {
+                column.toggleSorting(true)
+              } else {
+                column.clearSorting()
+              }
+            }}
+          >
+            <SortIcon sorted={isSorted} />
+          </Button>
+          < FleetColumnFilterPopover
+            column={column}
+            options={options}
+            sortedOptions={sortedOptions}
+            maxLength={maxLength}
+            operatorOptions={operatorOptions}
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -189,12 +193,12 @@ export const columns: ColumnDef<Aircraft>[] = [
       const maxLength =
         displayOperators.length > 0
           ? Math.max(
-              ...displayOperators.map(
-                (operator) =>
-                  `${operator.icaoCode ?? "—"}/${operator.iataCode ?? "—"}`
-                    .length
-              )
+            ...displayOperators.map(
+              (operator) =>
+                `${operator.icaoCode ?? "—"}/${operator.iataCode ?? "—"}`
+                  .length
             )
+          )
           : undefined
 
       return (

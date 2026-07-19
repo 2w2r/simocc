@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { FunnelX } from "lucide-react"
 
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"
@@ -129,8 +130,21 @@ export function FleetTable({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No aircraft in fleet.
+              <TableCell colSpan={columns.length} className="text-center text-sm text-muted-foreground">
+                {columnFilters.length > 0 ? (
+                  <span className="inline-flex items-center gap-2">
+                    No aircraft match the active filters.
+                    <button
+                      className="inline-flex items-center gap-1 text-destructive hover:opacity-80"
+                      onClick={() => setColumnFilters([])}
+                    >
+                      <FunnelX className="size-3.5" />
+                      Clear filters
+                    </button>
+                  </span>
+                ) : (
+                  "No aircraft in fleet."
+                )}
               </TableCell>
             </TableRow>
           )}
