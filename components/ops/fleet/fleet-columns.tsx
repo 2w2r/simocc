@@ -17,7 +17,7 @@ export type Aircraft = {
     name: string
     icaoCode: string | null
     iataCode: string | null
-  } | null
+  }
 }
 
 function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {

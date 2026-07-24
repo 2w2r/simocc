@@ -10,7 +10,7 @@ export default async function FleetPage() {
     include: {
       operator: {
         select: {
-          sourceId: true,
+          id: true,
           name: true,
           icaoCode: true,
           iataCode: true,

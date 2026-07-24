@@ -23,6 +23,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   preferences   UserPreferences?
+  operatorReferences OperatorReference[]
   aircraft Aircraft[]
 
   @@unique([email])
@@ -85,7 +86,9 @@ model UserPreferences {
 
 model OperatorReference {
   id        String  @id @default(cuid())
-  sourceId  Int     @unique
+  sourceId  Int?     @unique
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   icaoCode  String?
   iataCode  String?
   name      String
@@ -100,10 +103,10 @@ model Aircraft {
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   registration String
   icaoCode     String
-  operatorSourceId   Int?
-  operator     OperatorReference? @relation(fields: [operatorSourceId], references: [sourceId])
+  operatorId   String
+  operator     OperatorReference @relation(fields: [operatorId], references: [id])
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  @@unique([userId, registration, operatorSourceId, icaoCode])
+  @@unique([userId, registration, operatorId, icaoCode])
 }

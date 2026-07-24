@@ -25,11 +25,9 @@ export async function addAircraft(
     ?.trim()
     .toUpperCase()
   const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase()
-  const operatorSourceId = formData.get("operatorSourceId")
-    ? Number(formData.get("operatorSourceId"))
-    : null
+  const operatorId = (formData.get("operatorId") as string)?.trim() || null
 
-  if (!registration || !icaoCode) {
+  if (!registration || !icaoCode || !operatorId) {
     return { error: { field: "general" as const, message: "Invalid request." } }
   }
 
@@ -57,7 +55,7 @@ export async function addAircraft(
         userId: session.user.id,
         registration,
         icaoCode,
-        operatorSourceId,
+        operatorId,
       },
     })
   } catch {
@@ -91,15 +89,29 @@ export async function removeAircraftMany(ids: string[]) {
 export async function searchOperators(query: string) {
   if (!query || query.length < 1) return []
 
+  const session = await getSession()
+
   const upper = query.toUpperCase().trim()
-  const excludePrivate = { sourceId: { not: -1 } }
+  const operatorScope = {
+    AND: [
+      {
+        NOT: { AND: [{ sourceId: -1 }, { userId: null }] },
+      },
+      {
+        OR: [
+          { userId: null },
+          { userId: session?.user.id },
+        ],
+      },
+    ],
+  }
 
   if (upper.includes("/")) {
     const [icaoPart, iataPart] = upper.split("/").map((s) => s.trim())
     return prisma.operatorReference.findMany({
       where: {
-        ...excludePrivate,
         AND: [
+          operatorScope,
           ...(icaoPart ? [{ icaoCode: { contains: icaoPart } }] : []),
           ...(iataPart ? [{ iataCode: { contains: iataPart } }] : []),
         ],
@@ -110,10 +122,14 @@ export async function searchOperators(query: string) {
 
   const codeMatches = await prisma.operatorReference.findMany({
     where: {
-      ...excludePrivate,
-      OR: [
-        { icaoCode: { contains: upper } },
-        { iataCode: { contains: upper } },
+      AND: [
+        operatorScope,
+        {
+          OR: [
+            { icaoCode: { contains: upper } },
+            { iataCode: { contains: upper } },
+          ],
+        },
       ],
     },
     take: 10,
@@ -129,9 +145,11 @@ export async function searchOperators(query: string) {
 
   const nameMatches = await prisma.operatorReference.findMany({
     where: {
-      ...excludePrivate,
-      name: { contains: query, mode: "insensitive" },
-      id: { notIn: [...codeMatchIds] },
+      AND: [
+        operatorScope,
+        { name: { contains: query, mode: "insensitive" } },
+        { id: { notIn: [...codeMatchIds] } },
+      ],
     },
     take: 10,
     orderBy: { name: "asc" },

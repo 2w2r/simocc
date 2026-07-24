@@ -26,7 +26,6 @@ import { cn } from "@/lib/utils"
 
 type Operator = {
   id: string
-  sourceId: number
   name: string
   icaoCode: string | null
   iataCode: string | null
@@ -94,7 +93,7 @@ export function FleetForm({
     formData.set("icaoCode", icaoCode)
     const effectiveOperator = selectedOperator ?? privateOperator
     if (effectiveOperator)
-      formData.set("operatorSourceId", effectiveOperator.sourceId.toString())
+      formData.set("operatorId", effectiveOperator.id)
 
     const result = await addAircraft(formData)
 
