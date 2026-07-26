@@ -14,6 +14,47 @@ type AddAircraftResult =
   | { success: true; error?: never }
   | { error: AddAircraftError; success?: never }
 
+type ActionError = { field: string; message: string }
+
+type RemoveCustomOperatorResult = {
+  removedCount: number
+  blocked: { id: string; name: string }[]
+}
+
+export type CustomOperator = {
+  id: string
+  name: string
+  icaoCode: string | null
+  iataCode: string | null
+  inUse: boolean
+}
+
+function scoreCodeMatch(
+  operator: { icaoCode: string | null; iataCode: string | null },
+  upper: string
+): number {
+  if (operator.icaoCode === upper) return 0
+  if (operator.iataCode === upper) return 1
+  return 2
+}
+
+function mergeDeduped<T extends { id: string }>(
+  primary: T[],
+  secondary: T[],
+  limit: number
+): T[] {
+  const seen = new Set<string>()
+  const results: T[] = []
+  for (const item of [...primary, ...secondary]) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id)
+      results.push(item)
+      if (results.length === limit) break
+    }
+  }
+  return results
+}
+
 export async function addAircraft(
   formData: FormData
 ): Promise<AddAircraftResult> {
@@ -27,27 +68,24 @@ export async function addAircraft(
   const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase()
   const operatorId = (formData.get("operatorId") as string)?.trim() || null
 
-  if (!registration || !icaoCode || !operatorId) {
+  if (!registration || !icaoCode || !operatorId)
     return { error: { field: "general" as const, message: "Invalid request." } }
-  }
 
-  if (!/^[A-Z0-9]{1,2}-?[A-Z0-9]{1,5}$/.test(registration)) {
+  if (!/^[A-Z0-9]{1,2}-?[A-Z0-9]{1,5}$/.test(registration))
     return {
       error: {
         field: "registration" as const,
         message: "Invalid registration format.",
       },
     }
-  }
 
-  if (!/^[A-Z0-9]{2,4}$/.test(icaoCode)) {
+  if (!/^[A-Z0-9]{2,4}$/.test(icaoCode))
     return {
       error: {
         field: "icaoCode" as const,
         message: "Invalid ICAO Aircraft Type Designator format.",
       },
     }
-  }
 
   try {
     await prisma.aircraft.create({
@@ -94,15 +132,8 @@ export async function searchOperators(query: string) {
   const upper = query.toUpperCase().trim()
   const operatorScope = {
     AND: [
-      {
-        NOT: { AND: [{ sourceId: -1 }, { userId: null }] },
-      },
-      {
-        OR: [
-          { userId: null },
-          { userId: session?.user.id },
-        ],
-      },
+      { NOT: { AND: [{ sourceId: -1 }, { userId: null }] } },
+      { OR: [{ userId: null }, { userId: session?.user.id }] },
     ],
   }
 
@@ -135,11 +166,9 @@ export async function searchOperators(query: string) {
     take: 10,
   })
 
-  const sortedCodeMatches = codeMatches.sort((a, b) => {
-    const score = (op: typeof a) =>
-      op.icaoCode === upper ? 0 : op.iataCode === upper ? 1 : 2
-    return score(a) - score(b)
-  })
+  const sortedCodeMatches = codeMatches.sort(
+    (a, b) => scoreCodeMatch(a, upper) - scoreCodeMatch(b, upper)
+  )
 
   const codeMatchIds = new Set(sortedCodeMatches.map((op) => op.id))
 
@@ -155,17 +184,7 @@ export async function searchOperators(query: string) {
     orderBy: { name: "asc" },
   })
 
-  const seen = new Set<string>()
-  const results = []
-  for (const op of [...sortedCodeMatches, ...nameMatches]) {
-    if (!seen.has(op.id)) {
-      seen.add(op.id)
-      results.push(op)
-      if (results.length === 10) break
-    }
-  }
-
-  return results
+  return mergeDeduped(sortedCodeMatches, nameMatches, 10)
 }
 
 export async function getPrivateOperator() {
@@ -173,8 +192,6 @@ export async function getPrivateOperator() {
     where: { sourceId: -1 },
   })
 }
-
-type ActionError = { field: string; message: string }
 
 export async function addCustomOperator(
   formData: FormData
@@ -214,14 +231,6 @@ export async function addCustomOperator(
   return { success: true }
 }
 
-export type CustomOperator = {
-  id: string
-  name: string
-  icaoCode: string | null
-  iataCode: string | null
-  inUse: boolean
-}
-
 export async function getCustomOperators(): Promise<CustomOperator[]> {
   const session = await getSession()
   if (!session) return []
@@ -241,11 +250,6 @@ export async function getCustomOperators(): Promise<CustomOperator[]> {
     ...operator,
     inUse: _count.aircraft > 0,
   }))
-}
-
-type RemoveCustomOperatorResult = {
-  removedCount: number
-  blocked: { id: string; name: string }[]
 }
 
 export async function removeCustomOperator(
