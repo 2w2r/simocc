@@ -1,34 +1,21 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
-import { Minus, Plus, TextSearch } from "lucide-react"
+import { Plus, TextSearch } from "lucide-react"
 
 import {
   addAircraft,
   CustomOperator,
-  searchOperators,
 } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
-import {
-  ButtonGroup,
-  ButtonGroupText,
-} from "@/components/ui/button-group"
-
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox"
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { StatusMessage } from "@/components/ui/status-message"
 import { cn } from "@/lib/utils"
 import { OperatorReference } from "@/lib/generated/prisma/client"
+import { FleetFormOperatorCombobox } from "@/components/ops/fleet/fleet-form-operator-combobox"
 
 type Operator = {
   id: string
@@ -43,10 +30,6 @@ type Errors = {
   registration?: string
   icaoCode?: string
   general?: string
-}
-
-function formatOperatorCode(operator: Operator): string {
-  return `${operator.icaoCode ?? "———"}/${operator.iataCode ?? "——"}`
 }
 
 export function FleetForm({
@@ -64,31 +47,11 @@ export function FleetForm({
 }) {
   const [registration, setRegistration] = useState("")
   const [icaoCode, setIcaoCode] = useState("")
-  const [operatorQuery, setOperatorQuery] = useState("")
-  const [operators, setOperators] = useState<Operator[]>([])
-  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(
-    null
-  )
+  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null)
   const [errors, setErrors] = useState<Errors>({})
   const [submitting, setSubmitting] = useState(false)
 
   const canSubmit = registration.trim().length > 0 && icaoCode.trim().length > 0
-  const operatorsWithPrivate = [
-    ...operators,
-    ...(privateOperator ? [privateOperator] : []),
-  ]
-
-  useEffect(() => {
-    if (operatorQuery.length < 1) {
-      setOperators([])
-      return
-    }
-    const timeout = setTimeout(async () => {
-      const results = await searchOperators(operatorQuery)
-      setOperators(results)
-    }, 200)
-    return () => clearTimeout(timeout)
-  }, [operatorQuery])
 
   async function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -110,7 +73,6 @@ export function FleetForm({
       setRegistration("")
       setIcaoCode("")
       setSelectedOperator(null)
-      setOperatorQuery("")
     }
 
     setSubmitting(false)
@@ -174,64 +136,14 @@ export function FleetForm({
                 <StatusMessage variant="error" text={errors.icaoCode} />
               )}
             </div>
-            <Combobox
-              items={operatorsWithPrivate}
-              itemToStringLabel={(op) =>
-                op.id === "none"
-                  ? "—/—  ·  No Operator"
-                  : `${op.icaoCode ?? "—"}/${op.iataCode ?? "—"}  ·  ${op.name}`
-              }
-              value={selectedOperator}
-              onValueChange={(op) => {
-                setSelectedOperator((op as Operator) ?? null)
-                setOperatorQuery("")
-              }}
-            >
-              <ComboboxInput
-                placeholder="Operator"
-                className="text-sm"
-                showClear
-                onChange={(e) => setOperatorQuery(e.target.value)}
-                onBlur={() => setTimeout(() => setOperatorQuery(""), 200)}
-              />
-              <ComboboxContent>
-                <ComboboxList>
-                  {(operator) => (
-                    <ComboboxItem key={operator.id} value={operator}>
-                      <span className="w-16 shrink-0 font-mono text-sm">
-                        {formatOperatorCode(operator)}
-                      </span>
-                      <span
-                        className="truncate text-muted-foreground"
-                        title={operator.name}
-                      >
-                        {operator.name}
-                      </span>
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
-                {operatorQuery.length === 0 ? (
-                  <ButtonGroup className="mx-1 mb-1 w-[calc(100%-0.5rem)]">
-                    <Button variant="outline" size="icon" onClick={onAddCustomOperator}>
-                      <Plus className="size-3.5" />
-                    </Button>
-                    <ButtonGroupText className="flex-1 justify-center text-sm">
-                      Custom Operator
-                    </ButtonGroupText>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      disabled={customOperators.length === 0}
-                      onClick={onRemoveCustomOperator}
-                    >
-                      <Minus className="size-3.5" />
-                    </Button>
-                  </ButtonGroup>
-                ) : (
-                  <ComboboxEmpty>No operators found.</ComboboxEmpty>
-                )}
-              </ComboboxContent>
-            </Combobox>
+            <FleetFormOperatorCombobox
+              privateOperator={privateOperator}
+              customOperators={customOperators}
+              selectedOperator={selectedOperator}
+              onOperatorChange={setSelectedOperator}
+              onAddCustomOperator={onAddCustomOperator}
+              onRemoveCustomOperator={onRemoveCustomOperator}
+            />
             <Button
               type="submit"
               variant="default"
