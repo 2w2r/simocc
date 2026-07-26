@@ -16,15 +16,7 @@ import { StatusMessage } from "@/components/ui/status-message"
 import { cn } from "@/lib/utils"
 import { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetFormOperatorCombobox } from "@/components/ops/fleet/fleet-form-operator-combobox"
-
-type Operator = {
-  id: string
-  name: string
-  icaoCode: string | null
-  iataCode: string | null
-  callsign: string | null
-  country: string | null
-}
+import { Operator } from "@/components/ops/fleet/types"
 
 type Errors = {
   registration?: string

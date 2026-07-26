@@ -1,4 +1,4 @@
-import { Aircraft } from "@/components/ops/fleet/columns/types"
+import { Aircraft } from "@/components/ops/fleet/types"
 
 type SortKey = (row: Aircraft) => string
 

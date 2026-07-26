@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table"
 import { FunnelX } from "lucide-react"
 import { columns } from "@/components/ops/fleet/columns"
-import { Aircraft } from "@/components/ops/fleet/columns/types"
+import { Aircraft } from "@/components/ops/fleet/types"
 
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"

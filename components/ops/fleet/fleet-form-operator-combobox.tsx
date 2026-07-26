@@ -19,15 +19,7 @@ import {
     ComboboxList,
 } from "@/components/ui/combobox"
 import { OperatorReference } from "@/lib/generated/prisma/client"
-
-type Operator = {
-    id: string
-    name: string
-    icaoCode: string | null
-    iataCode: string | null
-    callsign: string | null
-    country: string | null
-}
+import { Operator } from "@/components/ops/fleet/types"
 
 function formatOperatorCode(operator: Operator): string {
     return `${operator.icaoCode ?? "———"}/${operator.iataCode ?? "——"}`

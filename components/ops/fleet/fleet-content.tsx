@@ -8,7 +8,7 @@ import { FleetTable } from "@/components/ops/fleet/fleet-table"
 import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
-import { Aircraft } from "@/components/ops/fleet/columns/types"
+import { Aircraft } from "@/components/ops/fleet/types"
 
 export function FleetContent({
   data,

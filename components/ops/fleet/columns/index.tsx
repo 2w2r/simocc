@@ -5,7 +5,7 @@ import { ColumnDef, HeaderContext } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 
 
-import { Aircraft } from "@/components/ops/fleet/columns/types"
+import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
 import { uniqueOrdered } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
