@@ -6,9 +6,9 @@ import { CustomOperator, getCustomOperators, removeAircraftMany } from "@/action
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
 import { Aircraft } from "@/components/ops/fleet/fleet-columns"
 import { FleetTable } from "@/components/ops/fleet/fleet-table"
-import { FleetCustomOperatorDialog } from "@/components/ops/fleet/fleet-custom-operator-dialog"
 import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
+import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
 
 export function FleetContent({
   data,
