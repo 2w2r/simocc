@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Minus } from "lucide-react"
 
-import { removeAircraftMany } from "@/actions/fleet"
+import { CustomOperator, getCustomOperators, removeAircraftMany } from "@/actions/fleet"
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
 import { Aircraft } from "@/components/ops/fleet/fleet-columns"
 import { FleetTable } from "@/components/ops/fleet/fleet-table"
@@ -20,10 +20,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { FleetCustomOperatorDialog } from "@/components/ops/fleet/fleet-custom-operator-dialog"
+import type { OperatorReference } from "@/lib/generated/prisma/client"
 
-export function FleetContent({ data }: { data: Aircraft[] }) {
+export function FleetContent({
+  data,
+  privateOperator,
+  customOperators: initialCustomOperators,
+}: {
+  data: Aircraft[]
+  customOperators: CustomOperator[]
+  privateOperator: OperatorReference | null
+}) {
+  const [customOperators, setCustomOperators] = useState(initialCustomOperators)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [resetKey, setResetKey] = useState(0)
+  const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
+  const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
 
   const selectedRegistrations = data
     .filter((a) => selectedIds.includes(a.id))
@@ -35,9 +48,16 @@ export function FleetContent({ data }: { data: Aircraft[] }) {
     setSelectedIds([])
   }
 
+  async function refreshCustomOperators() {
+    const operators = await getCustomOperators()
+    setCustomOperators(operators)
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <FleetForm
+        privateOperator={privateOperator}
+        customOperators={customOperators}
         deleteButton={
           selectedIds.length > 0 ? (
             <AlertDialog>
@@ -79,11 +99,28 @@ export function FleetContent({ data }: { data: Aircraft[] }) {
             </AlertDialog>
           ) : null
         }
+        onAddCustomOperator={() => {
+          setCustomOperatorMode("add")
+          setIsCustomOperatorDialogOpen(true)
+        }}
+        onRemoveCustomOperator={async () => {
+          const operators = await getCustomOperators()
+          setCustomOperators(operators)
+          setCustomOperatorMode("remove")
+          setIsCustomOperatorDialogOpen(true)
+        }}
       />
       <FleetTable
         data={data}
         onSelectionChange={setSelectedIds}
         resetKey={resetKey}
+      />
+      <FleetCustomOperatorDialog
+        open={isCustomOperatorDialogOpen}
+        onOpenChange={setIsCustomOperatorDialogOpen}
+        mode={customOperatorMode}
+        customOperators={customOperators}
+        onSuccess={refreshCustomOperators}
       />
     </div>
   )

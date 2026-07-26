@@ -173,3 +173,117 @@ export async function getPrivateOperator() {
     where: { sourceId: -1 },
   })
 }
+
+type ActionError = { field: string; message: string }
+
+export async function addCustomOperator(
+  formData: FormData
+): Promise<{ success: true; error?: never } | { error: ActionError; success?: never }> {
+  const session = await getSession()
+  if (!session)
+    return { error: { field: "general", message: "Not authenticated." } }
+
+  const name = (formData.get("name") as string)?.trim()
+  const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase() || null
+  const iataCode = (formData.get("iataCode") as string)?.trim().toUpperCase() || null
+  const callsign = (formData.get("callsign") as string)?.trim().toUpperCase() || null
+  const country = (formData.get("country") as string)?.trim() || null
+
+  if (!name)
+    return { error: { field: "name", message: "Please enter an operator name." } }
+
+  try {
+    await prisma.operatorReference.create({
+      data: {
+        userId: session.user.id,
+        name,
+        icaoCode,
+        iataCode,
+        callsign,
+        country,
+        sourceId: null,
+      },
+    })
+  } catch {
+    return {
+      error: { field: "general", message: "Failed to add operator." },
+    }
+  }
+
+  revalidatePath("/fleet")
+  return { success: true }
+}
+
+export type CustomOperator = {
+  id: string
+  name: string
+  icaoCode: string | null
+  iataCode: string | null
+  inUse: boolean
+}
+
+export async function getCustomOperators(): Promise<CustomOperator[]> {
+  const session = await getSession()
+  if (!session) return []
+
+  const operators = await prisma.operatorReference.findMany({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      icaoCode: true,
+      iataCode: true,
+      _count: { select: { aircraft: true } },
+    },
+  })
+
+  return operators.map(({ _count, ...operator }) => ({
+    ...operator,
+    inUse: _count.aircraft > 0,
+  }))
+}
+
+type RemoveCustomOperatorResult = {
+  removedCount: number
+  blocked: { id: string; name: string }[]
+}
+
+export async function removeCustomOperator(
+  ids: string[]
+): Promise<{ result: RemoveCustomOperatorResult; error?: never } | { error: ActionError; result?: never }> {
+  const session = await getSession()
+  if (!session)
+    return { error: { field: "general", message: "Not authenticated." } }
+
+  const candidates = await prisma.operatorReference.findMany({
+    where: { id: { in: ids }, userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      _count: { select: { aircraft: true } },
+    },
+  })
+
+  const blocked = candidates
+    .filter((operator) => operator._count.aircraft > 0)
+    .map(({ id, name }) => ({ id, name }))
+
+  const removableIds = candidates
+    .filter((operator) => operator._count.aircraft === 0)
+    .map((operator) => operator.id)
+
+  if (removableIds.length > 0) {
+    try {
+      await prisma.operatorReference.deleteMany({
+        where: { id: { in: removableIds }, userId: session.user.id },
+      })
+    } catch {
+      return {
+        error: { field: "general", message: "Failed to remove operator(s)." },
+      }
+    }
+  }
+
+  revalidatePath("/fleet")
+  return { result: { removedCount: removableIds.length, blocked } }
+}
