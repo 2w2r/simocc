@@ -14,7 +14,6 @@ import {
 
 import { useEffect, useState } from "react"
 
-import { Aircraft, columns } from "@/components/ops/fleet/fleet-columns"
 import {
   Table,
   TableBody,
@@ -24,6 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { FunnelX } from "lucide-react"
+import { columns } from "@/components/ops/fleet/columns"
+import { Aircraft } from "@/components/ops/fleet/columns/types"
 
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"
@@ -106,9 +107,9 @@ export function FleetTable({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                 </TableHead>
               ))}
             </TableRow>
