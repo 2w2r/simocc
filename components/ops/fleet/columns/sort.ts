@@ -1,4 +1,15 @@
-import { Aircraft } from "@/components/ops/fleet/columns/types";
+import { Aircraft } from "@/components/ops/fleet/columns/types"
+
+type SortKey = (row: Aircraft) => string
+
+const SORT_KEY_EXTRACTORS: Record<string, SortKey> = {
+  registration: (row) => row.registration,
+  icaoCode: (row) => row.icaoCode,
+  operator: (row) =>
+    row.operator?.icaoCode || row.operator?.iataCode
+      ? (row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF")
+      : "\uFFFF",
+}
 
 export function sortAllData(
   allData: Aircraft[],
@@ -6,25 +17,12 @@ export function sortAllData(
 ): Aircraft[] {
   const activeSort = sorting[0]
   if (!activeSort) return allData
+
+  const getKey = SORT_KEY_EXTRACTORS[activeSort.id]
+  if (!getKey) return allData
+
   return [...allData].sort((a, b) => {
-    let aKey = ""
-    let bKey = ""
-    if (activeSort.id === "registration") {
-      aKey = a.registration
-      bKey = b.registration
-    } else if (activeSort.id === "icaoCode") {
-      aKey = a.icaoCode
-      bKey = b.icaoCode
-    } else if (activeSort.id === "operator") {
-      aKey =
-        !a.operator?.icaoCode && !a.operator?.iataCode
-          ? "\uFFFF"
-          : (a.operator?.icaoCode ?? a.operator?.iataCode ?? "\uFFFF")
-      bKey =
-        !b.operator?.icaoCode && !b.operator?.iataCode
-          ? "\uFFFF"
-          : (b.operator?.icaoCode ?? b.operator?.iataCode ?? "\uFFFF")
-    }
-    return activeSort.desc ? bKey.localeCompare(aKey) : aKey.localeCompare(bKey)
+    const comparison = getKey(a).localeCompare(getKey(b))
+    return activeSort.desc ? -comparison : comparison
   })
 }
