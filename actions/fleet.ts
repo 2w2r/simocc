@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
+import { customOperatorQueryArgs, CustomOperator, removableOperatorQueryArgs, Aircraft, aircraftQueryArgs } from "@/components/ops/fleet/types"
 
 type AddAircraftError = {
   field: "registration" | "icaoCode" | "general"
@@ -19,14 +20,6 @@ type ActionError = { field: string; message: string }
 type RemoveCustomOperatorResult = {
   removedCount: number
   blocked: { id: string; name: string }[]
-}
-
-export type CustomOperator = {
-  id: string
-  name: string
-  icaoCode: string | null
-  iataCode: string | null
-  inUse: boolean
 }
 
 function scoreCodeMatch(
@@ -53,6 +46,29 @@ function mergeDeduped<T extends { id: string }>(
     }
   }
   return results
+}
+
+export async function getFleetAircraft(): Promise<Aircraft[]> {
+  const session = await getSession()
+  if (!session) return []
+
+  const [aircraft, operators] = await Promise.all([
+    prisma.aircraft.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      ...aircraftQueryArgs,
+    }),
+    prisma.operatorReference.findMany({
+      where: { OR: [{ userId: session.user.id }, { userId: null }] },
+    }),
+  ])
+
+  const operatorById = new Map(operators.map((op) => [op.id, op]))
+
+  return aircraft.map((a) => ({
+    ...a,
+    operator: operatorById.get(a.operatorId)!,
+  }))
 }
 
 export async function addAircraft(
@@ -237,13 +253,7 @@ export async function getCustomOperators(): Promise<CustomOperator[]> {
 
   const operators = await prisma.operatorReference.findMany({
     where: { userId: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      icaoCode: true,
-      iataCode: true,
-      _count: { select: { aircraft: true } },
-    },
+    ...customOperatorQueryArgs,
   })
 
   return operators.map(({ _count, ...operator }) => ({
@@ -261,11 +271,7 @@ export async function removeCustomOperator(
 
   const candidates = await prisma.operatorReference.findMany({
     where: { id: { in: ids }, userId: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      _count: { select: { aircraft: true } },
-    },
+    ...removableOperatorQueryArgs,
   })
 
   const blocked = candidates

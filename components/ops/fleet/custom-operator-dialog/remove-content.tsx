@@ -3,7 +3,6 @@
 import { useState } from "react"
 
 import { removeCustomOperator } from "@/actions/fleet"
-import type { CustomOperator } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogFooter } from "@/components/ui/dialog"
@@ -11,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { StatusMessage } from "@/components/ui/status-message"
 import { cn } from "@/lib/utils"
 import { MIN_LOADING_DELAY_MS } from "@/lib/constants"
+import { CustomOperator } from "@/components/ops/fleet/types"
 
 export function RemoveOperatorContent({
     customOperators,

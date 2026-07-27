@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { Minus, Plus } from "lucide-react"
 
-import { CustomOperator, searchOperators } from "@/actions/fleet"
+import { searchOperators } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
 import {
     ButtonGroup,
@@ -19,7 +19,7 @@ import {
     ComboboxList,
 } from "@/components/ui/combobox"
 import { OperatorReference } from "@/lib/generated/prisma/client"
-import { Operator } from "@/components/ops/fleet/types"
+import { CustomOperator, Operator } from "@/components/ops/fleet/types"
 
 function formatOperatorCode(operator: Operator): string {
     return `${operator.icaoCode ?? "———"}/${operator.iataCode ?? "——"}`

@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 
-import { CustomOperator, getCustomOperators, removeAircraftMany } from "@/actions/fleet"
+import { getCustomOperators, removeAircraftMany } from "@/actions/fleet"
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
 import { FleetTable } from "@/components/ops/fleet/fleet-table"
 import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
-import { Aircraft } from "@/components/ops/fleet/types"
+import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
 
 export function FleetContent({
   data,

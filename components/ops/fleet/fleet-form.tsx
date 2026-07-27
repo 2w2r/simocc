@@ -4,10 +4,7 @@ import { useState } from "react"
 
 import { Plus, TextSearch } from "lucide-react"
 
-import {
-  addAircraft,
-  CustomOperator,
-} from "@/actions/fleet"
+import { addAircraft } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -16,7 +13,7 @@ import { StatusMessage } from "@/components/ui/status-message"
 import { cn } from "@/lib/utils"
 import { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetFormOperatorCombobox } from "@/components/ops/fleet/fleet-form-operator-combobox"
-import { Operator } from "@/components/ops/fleet/types"
+import { CustomOperator, Operator } from "@/components/ops/fleet/types"
 
 type Errors = {
   registration?: string

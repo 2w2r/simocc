@@ -6,9 +6,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import type { CustomOperator } from "@/actions/fleet"
 import { AddOperatorContent } from "./add-content"
 import { RemoveOperatorContent } from "./remove-content"
+import { CustomOperator } from "@/components/ops/fleet/types"
 
 export function FleetCustomOperatorDialog({
     open,
