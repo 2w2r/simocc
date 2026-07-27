@@ -43,11 +43,13 @@ export const columns: ColumnDef<Aircraft>[] = [
     {
         accessorKey: "registration",
         filterFn: multiSelectFilter,
+        sortingFn: "text",
         header: createStringColumnHeader("Registration", (row) => row.registration),
     },
     {
         accessorKey: "icaoCode",
         filterFn: multiSelectFilter,
+        sortingFn: "text",
         header: createStringColumnHeader("Type", (row) => row.icaoCode),
     },
     {
@@ -55,6 +57,7 @@ export const columns: ColumnDef<Aircraft>[] = [
         accessorFn: (row) =>
             row.operator?.icaoCode ?? row.operator?.iataCode ?? "\uFFFF",
         filterFn: operatorFilter,
+        sortingFn: "text",
         header: ({ column, table }) => {
             const allData = table.options.data as Aircraft[]
             const sortedData = sortAllData(allData, table.getState().sorting)
