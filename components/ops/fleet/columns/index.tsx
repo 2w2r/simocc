@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
-import { uniqueOrdered } from "@/components/ops/fleet/columns/utils"
+import { uniqueOrdered, getRegPrefix } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
 import { multiSelectFilter, operatorFilter } from "@/components/ops/fleet/columns/filters"
 
@@ -39,42 +39,53 @@ function createStringColumnHeader(
     }
 }
 
+const regPrefixAccessor = (row: Aircraft) => getRegPrefix(row.registration)
+
 export const columns: ColumnDef<Aircraft>[] = [
     {
         accessorKey: "registration",
         filterFn: multiSelectFilter,
         sortingFn: "text",
+        meta: { label: "Registration" },
         header: createStringColumnHeader("Registration", (row) => row.registration),
+    },
+    {
+        id: "regPrefix",
+        accessorFn: regPrefixAccessor,
+        enableGrouping: true,
+        sortingFn: "text",
+        meta: { groupingOnly: true, label: "Registration Prefix" },
     },
     {
         accessorKey: "icaoCode",
         filterFn: multiSelectFilter,
+        enableGrouping: true,
         sortingFn: "text",
+        meta: { label: "Type" },
         header: createStringColumnHeader("Type", (row) => row.icaoCode),
     },
     {
         id: "operator",
         accessorFn: (row) =>
-            row.operator?.icaoCode ?? row.operator?.iataCode ?? "\uFFFF",
+            row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF",
+        getGroupingValue: (row) => row.operator.id,
         filterFn: operatorFilter,
+        enableGrouping: true,
         sortingFn: "text",
+        meta: { label: "Operator" },
         header: ({ column, table }) => {
             const allData = table.options.data as Aircraft[]
             const sortedData = sortAllData(allData, table.getState().sorting)
 
+            const operatorDisplayKey = (operator: Aircraft["operator"]) =>
+                operator.icaoCode ?? operator.iataCode ?? operator.name
+
             const displayOperators = uniqueOrdered(
-                sortedData
-                    .map((row) => row.operator)
-                    .filter(
-                        (operator): operator is NonNullable<typeof operator> =>
-                            operator !== null
-                    ),
-                (operator) => operator.icaoCode ?? operator.iataCode ?? operator.name
+                sortedData.map((row) => row.operator),
+                operatorDisplayKey
             )
 
-            const allValues = displayOperators.map(
-                (operator) => operator.icaoCode ?? operator.iataCode ?? operator.name
-            )
+            const allValues = displayOperators.map(operatorDisplayKey)
 
             const maxLength =
                 displayOperators.length > 0
@@ -100,7 +111,6 @@ export const columns: ColumnDef<Aircraft>[] = [
         },
         cell: ({ row }) => {
             const operator = row.original.operator
-            if (!operator) return <span className="text-muted-foreground">—</span>
             const icao = operator.icaoCode ?? "—"
             const iata = operator.iataCode ?? "—"
             return (

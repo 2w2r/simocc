@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { getCustomOperators, removeAircraftMany } from "@/actions/fleet"
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
@@ -9,7 +9,10 @@ import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
 import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
+import { GroupingState } from "@tanstack/react-table"
+import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
 
+const GROUPING_STORAGE_KEY = "fleet-grouping"
 export function FleetContent({
   data,
   privateOperator,
@@ -24,6 +27,15 @@ export function FleetContent({
   const [resetKey, setResetKey] = useState(0)
   const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
   const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
+  const [grouping, setGrouping] = useState<GroupingState>(() => {
+    if (typeof window === "undefined") return []
+    const saved = localStorage.getItem(GROUPING_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  })
+
+  useEffect(() => {
+    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify(grouping))
+  }, [grouping])
 
   const selectedRegistrations = data
     .filter((a) => selectedIds.includes(a.id))
@@ -62,10 +74,15 @@ export function FleetContent({
           setIsCustomOperatorDialogOpen(true)
         }}
       />
+      <FleetGroupSelector
+        value={grouping}
+        onChange={setGrouping}
+      />
       <FleetTable
         data={data}
         onSelectionChange={setSelectedIds}
         resetKey={resetKey}
+        grouping={grouping}
       />
       <FleetCustomOperatorDialog
         open={isCustomOperatorDialogOpen}

@@ -10,3 +10,16 @@ export function uniqueOrdered<T>(
     return true
   })
 }
+
+export function getRegPrefix(registration: string): string {
+  const trimmed = registration.trim().toUpperCase()
+
+  const delimiterIndex = trimmed.search(/[-+]/)
+  if (delimiterIndex > 0) {
+    const delimiter = trimmed[delimiterIndex]
+    return trimmed.slice(0, delimiterIndex) + delimiter
+  }
+
+  const match = trimmed.match(/^[A-Z]+/)
+  return match ? match[0] : trimmed
+}
