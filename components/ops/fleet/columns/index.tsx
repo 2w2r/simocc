@@ -13,19 +13,45 @@ import { multiSelectFilter, operatorFilter } from "@/components/ops/fleet/column
 
 function createStringColumnHeader(
     label: string,
-    accessor: (row: Aircraft) => string
+    accessor: (row: Aircraft) => string,
+    options?: {
+        operatorAccessor?: (row: Aircraft) => Aircraft["operator"]
+    }
 ) {
     return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
         const allData = table.options.data as Aircraft[]
         const sortedData = sortAllData(allData, table.getState().sorting)
 
-        const displayValues = uniqueOrdered(sortedData.map(accessor), (v) => v)
+        const operatorAccessor = options?.operatorAccessor
 
-        const allValues = [...new Set(allData.map(accessor))].sort()
+        const operatorDisplayKey = (operator: Aircraft["operator"]) =>
+            operator.icaoCode ?? operator.iataCode ?? operator.name
+
+        const displayOperators = operatorAccessor
+            ? uniqueOrdered(sortedData.map(operatorAccessor), operatorDisplayKey)
+            : undefined
+
+        const displayValues = operatorAccessor
+            ? displayOperators!.map(operatorDisplayKey)
+            : uniqueOrdered(sortedData.map(accessor), (v) => v)
+
+        const allValues = operatorAccessor
+            ? [...new Set(allData.map((row) => operatorDisplayKey(operatorAccessor(row))))].sort()
+            : [...new Set(allData.map(accessor))].sort()
+
         const maxLength =
             allValues.length > 0
                 ? Math.max(...allValues.map((value) => value.length))
                 : undefined
+
+        const rawSorting = table.options.meta?.rawSorting ?? []
+        const ownSort = rawSorting.find((s) => s.id === column.id)
+        const isSorted: false | "asc" | "desc" = ownSort
+            ? ownSort.desc
+                ? "desc"
+                : "asc"
+            : false
+        const sortIndex = rawSorting.findIndex((s) => s.id === column.id)
 
         return (
             <ColumnHeader
@@ -33,7 +59,11 @@ function createStringColumnHeader(
                 column={column}
                 options={allValues}
                 sortedOptions={displayValues}
+                operatorOptions={displayOperators}
                 maxLength={maxLength}
+                isSorted={isSorted}
+                sortIndex={sortIndex}
+                sortCount={rawSorting.length}
             />
         )
     }
@@ -73,42 +103,11 @@ export const columns: ColumnDef<Aircraft>[] = [
         enableGrouping: true,
         sortingFn: "text",
         meta: { label: "Operator" },
-        header: ({ column, table }) => {
-            const allData = table.options.data as Aircraft[]
-            const sortedData = sortAllData(allData, table.getState().sorting)
-
-            const operatorDisplayKey = (operator: Aircraft["operator"]) =>
-                operator.icaoCode ?? operator.iataCode ?? operator.name
-
-            const displayOperators = uniqueOrdered(
-                sortedData.map((row) => row.operator),
-                operatorDisplayKey
-            )
-
-            const allValues = displayOperators.map(operatorDisplayKey)
-
-            const maxLength =
-                displayOperators.length > 0
-                    ? Math.max(
-                        ...displayOperators.map(
-                            (operator) =>
-                                `${operator.icaoCode ?? "—"}/${operator.iataCode ?? "—"}`
-                                    .length
-                        )
-                    )
-                    : undefined
-
-            return (
-                <ColumnHeader
-                    label="Operator"
-                    column={column}
-                    options={allValues}
-                    sortedOptions={allValues}
-                    operatorOptions={displayOperators}
-                    maxLength={maxLength}
-                />
-            )
-        },
+        header: createStringColumnHeader(
+            "Operator",
+            (row) => row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF",
+            { operatorAccessor: (row) => row.operator }
+        ),
         cell: ({ row }) => {
             const operator = row.original.operator
             const icao = operator.icaoCode ?? "—"

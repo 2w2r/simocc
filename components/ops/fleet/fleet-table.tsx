@@ -103,6 +103,9 @@ export function FleetTable({
     onSortingChange: handleSortingChange,
     onRowSelectionChange: setRowSelection,
     onColumnFiltersChange: setColumnFilters,
+    meta: {
+      rawSorting: sorting ?? [],
+    },
     state: {
       sorting: sorting ?? [],
       rowSelection,
