@@ -4,7 +4,6 @@ import {
   ColumnFiltersState,
   GroupingState,
   OnChangeFn,
-  Row,
   RowSelectionState,
   SortingState,
   flexRender,
@@ -26,106 +25,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ChevronDown, ChevronRight, FunnelX } from "lucide-react"
+import { FunnelX } from "lucide-react"
 import { columns } from "@/components/ops/fleet/columns"
 import { Aircraft } from "@/components/ops/fleet/types"
-import { FleetGroupCheckbox } from "@/components/ops/fleet/grouping/checkbox"
-import { Button } from "@/components/ui/button"
+import { FleetGroupRow } from "@/components/ops/fleet/grouping/group-row"
+import { findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
 
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"
-
-function getLeafRows<T>(row: Row<T>): Row<T>[] {
-  if (!row.subRows || row.subRows.length === 0) return [row]
-  return row.subRows.flatMap(getLeafRows)
-}
-
-function getGroupSelectionState<T>(
-  row: Row<T>,
-  rowSelection: RowSelectionState
-): boolean | "indeterminate" {
-  const leaves = getLeafRows(row)
-  const selectedCount = leaves.filter((leaf) => rowSelection[leaf.id]).length
-  if (selectedCount === 0) return false
-  if (selectedCount === leaves.length) return true
-  return "indeterminate"
-}
-
-function toggleGroupSelection<T>(
-  row: Row<T>,
-  rowSelection: RowSelectionState,
-  setRowSelection: OnChangeFn<RowSelectionState>
-) {
-  const leaves = getLeafRows(row)
-  const allSelected = leaves.every((leaf) => rowSelection[leaf.id])
-  setRowSelection((prev) => {
-    const next = { ...prev }
-    leaves.forEach((leaf) => {
-      if (allSelected) {
-        delete next[leaf.id]
-      } else {
-        next[leaf.id] = true
-      }
-    })
-    return next
-  })
-}
-
-function findOutermostCollapsedAncestor<T>(
-  row: Row<T>,
-  collapsedGroupIds: Set<string>
-): Row<T> | null {
-  let result: Row<T> | null = null
-  let current: Row<T> | undefined = row
-  while (current) {
-    if (collapsedGroupIds.has(current.id)) result = current
-    current = current.getParentRow()
-  }
-  return result
-}
-
-function getGroupedLevelSummaries<T>(
-  row: Row<T>,
-  resolveDisplayValue: (r: Row<T>) => string
-): { value: string; count: number }[][] {
-  const levels: Map<string, number>[] = []
-
-  function walk(node: Row<T>, depth: number) {
-    const childGroups = node.subRows.filter((r) => r.getIsGrouped())
-    if (childGroups.length === 0) return
-
-    if (!levels[depth]) levels[depth] = new Map()
-
-    for (const child of childGroups) {
-      const value = resolveDisplayValue(child)
-      const leafCount = getLeafRows(child).length
-      levels[depth].set(value, (levels[depth].get(value) ?? 0) + leafCount)
-      walk(child, depth + 1)
-    }
-  }
-
-  walk(row, 0)
-
-  return levels.map((levelMap) => {
-    const entries = [...levelMap.entries()]
-    const allSameCount = entries.every(([, count]) => count === entries[0][1])
-    return entries.map(([value, count]) => ({
-      value,
-      count: allSameCount ? 0 : count,
-    }))
-  })
-}
-
-function resolveGroupDisplayValue<T extends { operator: { icaoCode: string | null; iataCode: string | null; name: string } }>(
-  row: Row<T>
-): string {
-  if (row.groupingColumnId === "operator") {
-    const operator = row.subRows[0]?.original.operator
-    if (!operator) return String(row.groupingValue)
-    return `${operator.icaoCode ?? "—"}/${operator.iataCode ?? "—"}`
-  }
-  return String(row.groupingValue)
-}
 
 export function FleetTable({
   data,
@@ -243,89 +150,15 @@ export function FleetTable({
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => {
               if (row.getIsGrouped()) {
-                const nearestCollapsed = findOutermostCollapsedAncestor(row, collapsedGroupIds)
-
-                if (nearestCollapsed && nearestCollapsed.id !== row.id) return null
-
-                const isRepresentative = !!nearestCollapsed
-                if (!isRepresentative) {
-                  const isInnermostGroup = !row.subRows[0]?.getIsGrouped()
-                  if (!isInnermostGroup) return null
-                }
-
-                const breadcrumbLevels: (typeof row)[] = []
-                let current: typeof row | undefined = row
-                while (current && current.getIsGrouped()) {
-                  breadcrumbLevels.unshift(current)
-                  current = current.getParentRow()
-                }
-
-                const foldedLevels = isRepresentative
-                  ? getGroupedLevelSummaries(row, resolveGroupDisplayValue)
-                  : []
-
                 return (
-                  <TableRow key={row.id} className="bg-muted/50">
-                    <TableCell colSpan={row.getVisibleCells().length} className="font-medium">
-                      <div className="inline-flex items-center gap-1.5">
-                        {breadcrumbLevels.map((levelRow, index) => {
-                          const isLastSegment = index === breadcrumbLevels.length - 1
-                          const isLevelCollapsed = collapsedGroupIds.has(levelRow.id)
-                          const levelCount = levelRow.subRows.length
-
-                          return (
-                            <span key={levelRow.id} className="inline-flex items-center gap-1.5">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-6"
-                                title={isLastSegment && isLevelCollapsed ? "Expand" : "Collapse"}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  toggleGroupCollapse(levelRow.id)
-                                }}
-                              >
-                                {isLastSegment && isLevelCollapsed ? (
-                                  <ChevronRight className="size-3.5" />
-                                ) : (
-                                  <ChevronDown className="size-3.5" />
-                                )}
-                              </Button>
-                              <FleetGroupCheckbox
-                                checked={getGroupSelectionState(levelRow, rowSelection)}
-                                onCheckedChange={() => toggleGroupSelection(levelRow, rowSelection, setRowSelection)}
-                                onClick={(e) => e.stopPropagation()}
-                                aria-label={`Select ${resolveGroupDisplayValue(levelRow)}`}
-                                className="size-3.5"
-                              />
-                              <span className="cursor-default">{resolveGroupDisplayValue(levelRow)}</span>
-                              {levelCount > 1 && (
-                                <span className="inline-flex size-4 items-center justify-center rounded-sm bg-primary/15 text-[0.7rem]">
-                                  {levelCount}
-                                </span>
-                              )}
-                            </span>
-                          )
-                        })}
-                        {foldedLevels.map((levelEntries, i) => (
-                          <span key={i} className="inline-flex items-center gap-1.5 text-muted-foreground">
-                            <ChevronRight className="size-3.5 opacity-50" />
-                            {levelEntries.map((entry, j) => (
-                              <span key={entry.value} className="inline-flex items-center gap-1">
-                                {j > 0 && <span className="text-muted-foreground">·</span>}
-                                {entry.value}
-                                {entry.count > 1 && (
-                                  <span className="inline-flex size-4 items-center justify-center rounded-sm bg-primary/15 text-[0.7rem]">
-                                    {entry.count}
-                                  </span>
-                                )}
-                              </span>
-                            ))}
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <FleetGroupRow
+                    key={row.id}
+                    row={row}
+                    collapsedGroupIds={collapsedGroupIds}
+                    onToggleCollapse={toggleGroupCollapse}
+                    rowSelection={rowSelection}
+                    setRowSelection={setRowSelection}
+                  />
                 )
               }
 
