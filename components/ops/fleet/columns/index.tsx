@@ -9,7 +9,7 @@ import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
 import { uniqueOrdered, getRegPrefix } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
-import { multiSelectFilter, operatorFilter } from "@/components/ops/fleet/columns/filters"
+import { multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
 
 function createStringColumnHeader(
     label: string,
@@ -74,10 +74,10 @@ const regPrefixAccessor = (row: Aircraft) => getRegPrefix(row.registration)
 export const columns: ColumnDef<Aircraft>[] = [
     {
         accessorKey: "registration",
-        filterFn: multiSelectFilter,
+        filterFn: regPrefixFilter,
         sortingFn: "text",
         meta: { label: "Registration" },
-        header: createStringColumnHeader("Registration", (row) => row.registration),
+        header: createStringColumnHeader("Registration", (row) => getRegPrefix(row.registration)),
     },
     {
         id: "regPrefix",
