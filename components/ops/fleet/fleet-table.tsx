@@ -127,25 +127,38 @@ export function FleetTable({
 
   if (sorting === null) return null
 
+  const dataColumnCount = table.getVisibleLeafColumns().length - 1
+  const selectColumnWidth = 48
+  const minTableWidth = dataColumnCount * 120 + selectColumnWidth
+
   return (
     <div className="overflow-hidden rounded-md border">
-      <Table className="table-fixed">
+      <Table className="table-fixed" style={{ minWidth: `${minTableWidth}px` }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={{ width: `${header.getSize()}px` }}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                </TableHead>
-              ))}
+              {headerGroup.headers.map((header) => {
+                const isSelectColumn = header.column.id === "select"
+                const dataColumnWidth = `${100 / dataColumnCount}%`
+
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={
+                      isSelectColumn
+                        ? { width: "48px" }
+                        : { width: dataColumnWidth }
+                    }
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  </TableHead>
+                )
+              })}
             </TableRow>
           ))}
         </TableHeader>

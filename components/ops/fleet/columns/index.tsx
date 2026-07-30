@@ -120,6 +120,19 @@ export const columns: ColumnDef<Aircraft>[] = [
         },
     },
     {
+        id: "createdAt",
+        accessorFn: (row) => new Date(row.createdAt).toLocaleDateString(),
+        filterFn: multiSelectFilter,
+        sortingFn: (rowA, rowB) => {
+            return new Date(rowA.original.createdAt).getTime() - new Date(rowB.original.createdAt).getTime()
+        },
+        meta: { label: "Date Added" },
+        header: createStringColumnHeader("Date Added", (row) =>
+            new Date(row.createdAt).toLocaleDateString()
+        ),
+        cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+    },
+    {
         id: "select",
         size: 0,
         header: ({ table }) => (

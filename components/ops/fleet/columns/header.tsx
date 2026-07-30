@@ -57,7 +57,7 @@ export function ColumnHeader({
 
     return (
         <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium">{label}</span>
+            <span className="text-sm font-medium truncate">{label}</span>
             {!!options?.length && (
                 <>
                     <TooltipProvider delayDuration={1000}>
