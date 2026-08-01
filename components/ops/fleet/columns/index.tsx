@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
-import { uniqueOrdered, getRegPrefix } from "@/components/ops/fleet/columns/utils"
+import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
-import { multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
+import { dateRangeFilter, multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
 
 function createStringColumnHeader(
     label: string,
@@ -44,14 +44,7 @@ function createStringColumnHeader(
                 ? Math.max(...allValues.map((value) => value.length))
                 : undefined
 
-        const rawSorting = table.options.meta?.rawSorting ?? []
-        const ownSort = rawSorting.find((s) => s.id === column.id)
-        const isSorted: false | "asc" | "desc" = ownSort
-            ? ownSort.desc
-                ? "desc"
-                : "asc"
-            : false
-        const sortIndex = rawSorting.findIndex((s) => s.id === column.id)
+        const { isSorted, sortIndex, sortCount } = getSortMeta(column.id, table)
 
         return (
             <ColumnHeader
@@ -63,7 +56,27 @@ function createStringColumnHeader(
                 maxLength={maxLength}
                 isSorted={isSorted}
                 sortIndex={sortIndex}
-                sortCount={rawSorting.length}
+                sortCount={sortCount}
+            />
+        )
+    }
+}
+
+function createDateColumnHeader(label: string) {
+    return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
+        const allData = table.options.data as Aircraft[]
+        const presentDates = allData.map((row) => new Date(row.createdAt))
+        const { isSorted, sortIndex, sortCount } = getSortMeta(column.id, table)
+
+        return (
+            <ColumnHeader
+                label={label}
+                column={column}
+                isSorted={isSorted}
+                sortIndex={sortIndex}
+                sortCount={sortCount}
+                isDateFilter
+                presentDates={presentDates}
             />
         )
     }
@@ -121,16 +134,14 @@ export const columns: ColumnDef<Aircraft>[] = [
     },
     {
         id: "createdAt",
-        accessorFn: (row) => new Date(row.createdAt).toLocaleDateString(),
-        filterFn: multiSelectFilter,
+        accessorFn: (row) => new Date(row.createdAt),
+        filterFn: dateRangeFilter,
         sortingFn: (rowA, rowB) => {
             return new Date(rowA.original.createdAt).getTime() - new Date(rowB.original.createdAt).getTime()
         },
-        meta: { label: "Date Added" },
-        header: createStringColumnHeader("Date Added", (row) =>
-            new Date(row.createdAt).toLocaleDateString()
-        ),
-        cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+        meta: { label: "Added" },
+        header: createDateColumnHeader("Added"),
+        cell: ({ row }) => formatDateAdded(new Date(row.original.createdAt)),
     },
     {
         id: "select",

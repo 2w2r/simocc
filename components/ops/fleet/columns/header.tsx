@@ -11,6 +11,7 @@ import { FleetColumnFilterPopover } from "@/components/ops/fleet/fleet-column-fi
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
+import { FleetDateRangeFilterPopover } from "@/components/ops/fleet/fleet-date-range-filter-popover"
 
 function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
     if (sorted === "asc") return <ArrowDown className="size-3.5" />
@@ -28,6 +29,8 @@ export function ColumnHeader({
     isSorted,
     sortIndex,
     sortCount,
+    isDateFilter,
+    presentDates,
 }: {
     label: string
     column: {
@@ -47,6 +50,8 @@ export function ColumnHeader({
     isSorted: false | "asc" | "desc"
     sortIndex?: number
     sortCount?: number
+    isDateFilter?: boolean
+    presentDates?: Date[]
 }) {
     const showSortBadge =
         isSorted &&
@@ -58,46 +63,48 @@ export function ColumnHeader({
     return (
         <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{label}</span>
-            {!!options?.length && (
-                <>
-                    <TooltipProvider delayDuration={1000}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn("size-7 -mr-1.5 relative", isSorted && "text-primary")}
-                                    onClick={(e) => {
-                                        const isMulti = e.shiftKey
-                                        if (!isSorted) {
-                                            column.toggleSorting(false, isMulti)
-                                        } else if (isSorted === "asc") {
-                                            column.toggleSorting(true, isMulti)
-                                        } else {
-                                            column.clearSorting()
-                                        }
-                                    }}
-                                >
-                                    <SortIcon sorted={isSorted} />
-                                    {showSortBadge && (
-                                        <span className="absolute -top-0.5 -right-0.5 flex size-3 items-center justify-center rounded-full bg-primary text-[9px] font-medium text-primary-foreground">
-                                            {sortIndex + 1}
-                                        </span>
-                                    )}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent
-                                className="flex items-center gap-1.5"
-                                side="bottom"
-                                align="start"
-                            >
-                                <span className="-ml-1">Multi-sort</span>
-                                <KbdGroup>
-                                    <Kbd><ArrowBigUp /> + <MouseLeft /></Kbd>
-                                </KbdGroup>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+            <TooltipProvider delayDuration={1000}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn("size-7 -mr-1.5 relative", isSorted && "text-primary")}
+                            onClick={(e) => {
+                                const isMulti = e.shiftKey
+                                if (!isSorted) {
+                                    column.toggleSorting(false, isMulti)
+                                } else if (isSorted === "asc") {
+                                    column.toggleSorting(true, isMulti)
+                                } else {
+                                    column.clearSorting()
+                                }
+                            }}
+                        >
+                            <SortIcon sorted={isSorted} />
+                            {showSortBadge && (
+                                <span className="absolute -top-0.5 -right-0.5 flex size-3 items-center justify-center rounded-full bg-primary text-[9px] font-medium text-primary-foreground">
+                                    {sortIndex + 1}
+                                </span>
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                        className="flex items-center gap-1.5"
+                        side="bottom"
+                        align="start"
+                    >
+                        <span className="-ml-1">Multi-sort</span>
+                        <KbdGroup>
+                            <Kbd><ArrowBigUp /> + <MouseLeft /></Kbd>
+                        </KbdGroup>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+            {isDateFilter ? (
+                <FleetDateRangeFilterPopover column={column} presentDates={presentDates ?? []} />
+            ) : (
+                !!options?.length && (
                     <FleetColumnFilterPopover
                         column={column}
                         options={options}
@@ -105,7 +112,7 @@ export function ColumnHeader({
                         maxLength={maxLength}
                         operatorOptions={operatorOptions}
                     />
-                </>
+                )
             )}
         </div>
     )

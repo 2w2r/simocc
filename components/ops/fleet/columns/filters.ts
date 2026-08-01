@@ -31,3 +31,19 @@ export const operatorFilter = (
     operator?.icaoCode ?? operator?.iataCode ?? operator?.name ?? ""
   return filterValues.includes(value)
 }
+
+export function dateRangeFilter(
+  row: Row<Aircraft>,
+  columnId: string,
+  filterValue?: { from?: Date; to?: Date }
+): boolean {
+  if (!filterValue?.from && !filterValue?.to) return true
+  const cellDate = new Date(row.getValue(columnId) as Date)
+  if (filterValue.from && cellDate < filterValue.from) return false
+  if (filterValue.to) {
+    const endOfDay = new Date(filterValue.to)
+    endOfDay.setHours(23, 59, 59, 999)
+    if (cellDate > endOfDay) return false
+  }
+  return true
+}
