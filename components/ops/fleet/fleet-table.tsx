@@ -15,7 +15,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import {
   Table,
@@ -26,10 +26,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { FunnelX } from "lucide-react"
-import { columns } from "@/components/ops/fleet/columns"
+import { buildColumns } from "@/components/ops/fleet/columns"
 import { Aircraft } from "@/components/ops/fleet/types"
 import { FleetGroupRow } from "@/components/ops/fleet/grouping/group-row"
-import { findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
+import { DateGranularity, findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
 
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"
@@ -39,11 +39,13 @@ export function FleetTable({
   onSelectionChange,
   resetKey,
   grouping,
+  dateGranularity,
 }: {
   data: Aircraft[]
   onSelectionChange: (ids: string[]) => void
   resetKey?: number
   grouping: GroupingState
+  dateGranularity: DateGranularity
 }) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [sorting, setSorting] = useState<SortingState | null>(null)
@@ -53,6 +55,8 @@ export function FleetTable({
     return saved ? JSON.parse(saved) : []
   })
   const [collapsedGroupIds, setCollapsedGroupIds] = useState<Set<string>>(new Set())
+
+  const columns = useMemo(() => buildColumns(dateGranularity), [dateGranularity])
 
   function toggleGroupCollapse(rowId: string) {
     setCollapsedGroupIds((prev) => {

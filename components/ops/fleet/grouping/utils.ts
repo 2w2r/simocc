@@ -1,5 +1,7 @@
 import { OnChangeFn, Row, RowSelectionState } from "@tanstack/react-table"
 
+export type DateGranularity = "day" | "month" | "year"
+
 export function getLeafRows<T>(row: Row<T>): Row<T>[] {
   if (!row.subRows || row.subRows.length === 0) return [row]
   return row.subRows.flatMap(getLeafRows)
@@ -90,4 +92,15 @@ export function resolveGroupDisplayValue<T extends { operator: { icaoCode: strin
     return `${operator.icaoCode ?? "—"}/${operator.iataCode ?? "—"}`
   }
   return String(row.groupingValue)
+}
+
+export function getDateGroupingValue(row: { createdAt: Date | string }, granularity: DateGranularity): string {
+  const d = new Date(row.createdAt)
+  const year = String(d.getUTCFullYear())
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0")
+  const day = String(d.getUTCDate()).padStart(2, "0")
+
+  if (granularity === "year") return year
+  if (granularity === "month") return `${year}-${month}`
+  return `${year}-${month}-${day}`
 }

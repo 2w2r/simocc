@@ -11,8 +11,15 @@ import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operato
 import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
 import { GroupingState } from "@tanstack/react-table"
 import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
+import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
 
 const GROUPING_STORAGE_KEY = "fleet-grouping"
+
+type PersistedGroupingState = {
+  grouping: GroupingState
+  dateGranularity: DateGranularity
+}
+
 export function FleetContent({
   data,
   privateOperator,
@@ -27,15 +34,23 @@ export function FleetContent({
   const [resetKey, setResetKey] = useState(0)
   const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
   const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
-  const [grouping, setGrouping] = useState<GroupingState>(() => {
-    if (typeof window === "undefined") return []
+  const [{ grouping, dateGranularity }, setPersistedGrouping] = useState<PersistedGroupingState>(() => {
+    if (typeof window === "undefined") return { grouping: [], dateGranularity: "day" }
     const saved = localStorage.getItem(GROUPING_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : []
+    return saved ? JSON.parse(saved) : { grouping: [], dateGranularity: "day" }
   })
 
   useEffect(() => {
-    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify(grouping))
-  }, [grouping])
+    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularity }))
+  }, [grouping, dateGranularity])
+
+  function setGrouping(next: GroupingState) {
+    setPersistedGrouping((prev) => ({ ...prev, grouping: next }))
+  }
+
+  function setDateGranularity(next: DateGranularity) {
+    setPersistedGrouping((prev) => ({ ...prev, dateGranularity: next }))
+  }
 
   const selectedRegistrations = data
     .filter((a) => selectedIds.includes(a.id))
@@ -77,12 +92,16 @@ export function FleetContent({
       <FleetGroupSelector
         value={grouping}
         onChange={setGrouping}
+        dateGranularity={dateGranularity}
+        onDateGranularityChange={setDateGranularity}
       />
       <FleetTable
+        key={dateGranularity}
         data={data}
         onSelectionChange={setSelectedIds}
         resetKey={resetKey}
         grouping={grouping}
+        dateGranularity={dateGranularity}
       />
       <FleetCustomOperatorDialog
         open={isCustomOperatorDialogOpen}

@@ -12,15 +12,17 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
-import { columns } from "@/components/ops/fleet/columns"
+import { buildColumns } from "@/components/ops/fleet/columns"
+import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
 
 type GroupableColumn = {
     id: string
     label: string
 }
 
-const groupableColumns: GroupableColumn[] = columns
+const groupableColumns: GroupableColumn[] = buildColumns("day")
     .filter((col) => col.enableGrouping)
     .map((col) => {
         const id = "id" in col ? col.id! : (col as { accessorKey: string }).accessorKey
@@ -30,9 +32,13 @@ const groupableColumns: GroupableColumn[] = columns
 export function FleetGroupSelector({
     value,
     onChange,
+    dateGranularity,
+    onDateGranularityChange,
 }: {
     value: GroupingState
     onChange: (next: GroupingState) => void
+    dateGranularity: DateGranularity
+    onDateGranularityChange: (next: DateGranularity) => void
 }) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState("")
@@ -58,6 +64,12 @@ export function FleetGroupSelector({
         onChange(next)
     }
 
+    function handleGranularityChange(next: DateGranularity) {
+        onDateGranularityChange(next)
+        if (!value.includes("createdAt")) {
+            onChange([...value, "createdAt"])
+        }
+    }
     return (
         <Popover
             open={open}
@@ -101,29 +113,53 @@ export function FleetGroupSelector({
                         const position = value.indexOf(id)
                         const isSelected = position !== -1
                         return (
-                            <button
+                            <div
                                 key={id}
-                                className={cn(
-                                    "flex w-full items-center gap-1 rounded py-0.5 pr-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none",
-                                    isSelected && "font-medium"
-                                )}
-                                onClick={() => toggleColumn(id)}
+                                className="flex w-full items-center gap-1 rounded py-0.5 pr-2 hover:bg-accent"
                             >
-                                <span className="flex size-7 shrink-0 items-center justify-center">
-                                    <Check
-                                        className={cn(
-                                            "size-3.5",
-                                            isSelected ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                </span>
-                                <span className="shrink-0">{label}</span>
-                                {isSelected && value.length > 1 && (
-                                    <span className="ml-auto text-xs text-muted-foreground">
-                                        {position + 1}
+                                <button
+                                    className={cn(
+                                        "flex flex-1 items-center gap-1 text-left text-sm focus-visible:outline-none",
+                                        isSelected && "font-medium"
+                                    )}
+                                    onClick={() => toggleColumn(id)}
+                                >
+                                    <span className="flex size-7 shrink-0 items-center justify-center">
+                                        <Check
+                                            className={cn(
+                                                "size-3.5",
+                                                isSelected ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
                                     </span>
+                                    <span className="shrink-0">{label}</span>
+                                    {isSelected && value.length > 1 && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {position + 1}
+                                        </span>
+                                    )}
+                                </button>
+                                {id === "createdAt" && (
+                                    <ToggleGroup
+                                        type="single"
+                                        value={dateGranularity}
+                                        onValueChange={(next) => {
+                                            if (next) handleGranularityChange(next as DateGranularity)
+                                        }}
+                                        className="ml-auto h-5 gap-0 rounded-full border border-border bg-muted p-0.5"
+                                    >
+                                        {(["year", "month", "day"] as const).map((g) => (
+                                            <ToggleGroupItem
+                                                key={g}
+                                                value={g}
+                                                className="h-4 w-4 rounded-full p-0 text-[9px] data-[state=on]:!bg-primary data-[state=on]:!text-primary-foreground"
+                                            >
+                                                {g[0].toUpperCase()}
+                                            </ToggleGroupItem>
+                                        ))}
+                                    </ToggleGroup>
                                 )}
-                            </button>
+                            </div>
                         )
                     })}
                 </div>
