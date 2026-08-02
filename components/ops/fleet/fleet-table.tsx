@@ -133,7 +133,7 @@ export function FleetTable({
 
   const dataColumnCount = table.getVisibleLeafColumns().length - 1
   const selectColumnWidth = 48
-  const minTableWidth = dataColumnCount * 120 + selectColumnWidth
+  const minTableWidth = dataColumnCount * 140 + selectColumnWidth
 
   return (
     <div className="overflow-hidden rounded-md border">
@@ -150,7 +150,7 @@ export function FleetTable({
                     key={header.id}
                     style={
                       isSelectColumn
-                        ? { width: "48px" }
+                        ? { width: `${selectColumnWidth}px` }
                         : { width: dataColumnWidth }
                     }
                   >

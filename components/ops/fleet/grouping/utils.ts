@@ -1,6 +1,7 @@
 import { OnChangeFn, Row, RowSelectionState } from "@tanstack/react-table"
 
 export type DateGranularity = "day" | "month" | "year"
+export type FoldedEntry = { value: string; count: number }
 
 export function getLeafRows<T>(row: Row<T>): Row<T>[] {
   if (!row.subRows || row.subRows.length === 0) return [row]
@@ -54,7 +55,7 @@ export function findOutermostCollapsedAncestor<T>(
 export function getGroupedLevelSummaries<T>(
   row: Row<T>,
   resolveDisplayValue: (r: Row<T>) => string
-): { value: string; count: number }[][] {
+): FoldedEntry[][] {
   const levels: Map<string, number>[] = []
 
   function walk(node: Row<T>, depth: number) {
@@ -103,4 +104,19 @@ export function getDateGroupingValue(row: { createdAt: Date | string }, granular
   if (granularity === "year") return year
   if (granularity === "month") return `${year}-${month}`
   return `${year}-${month}-${day}`
+}
+
+export function applyBudget(levels: FoldedEntry[][], budget: number) {
+  let remaining = budget
+  return levels.map((entries) => {
+    if (remaining <= 0) return { shown: [] as FoldedEntry[], hiddenCount: entries.length }
+    if (remaining >= entries.length) {
+      remaining -= entries.length
+      return { shown: entries, hiddenCount: 0 }
+    }
+    const shown = entries.slice(0, remaining)
+    const hiddenCount = entries.length - shown.length
+    remaining = 0
+    return { shown, hiddenCount }
+  })
 }
