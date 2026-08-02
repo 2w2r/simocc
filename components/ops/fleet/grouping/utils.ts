@@ -109,14 +109,14 @@ export function getDateGroupingValue(row: { createdAt: Date | string }, granular
 export function applyBudget(levels: FoldedEntry[][], budget: number) {
   let remaining = budget
   return levels.map((entries) => {
-    if (remaining <= 0) return { shown: [] as FoldedEntry[], hiddenCount: entries.length }
+    if (remaining <= 0) return { shown: [] as FoldedEntry[], hidden: entries }
     if (remaining >= entries.length) {
       remaining -= entries.length
-      return { shown: entries, hiddenCount: 0 }
+      return { shown: entries, hidden: [] as FoldedEntry[] }
     }
     const shown = entries.slice(0, remaining)
-    const hiddenCount = entries.length - shown.length
+    const hidden = entries.slice(remaining)
     remaining = 0
-    return { shown, hiddenCount }
+    return { shown, hidden }
   })
 }
