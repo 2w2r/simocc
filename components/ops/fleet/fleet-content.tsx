@@ -9,13 +9,16 @@ import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
 import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
-import { GroupingState, Updater, VisibilityState } from "@tanstack/react-table"
+import { GroupingState, SortingState, Updater, VisibilityState } from "@tanstack/react-table"
 import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
 import { FleetColumnVisibilityPopover } from "@/components/ops/fleet/fleet-column-visibility-popover"
+import { FleetDefaultSortPopover } from "@/components/ops/fleet/fleet-default-sort-popover"
 import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
 
 const GROUPING_STORAGE_KEY = "fleet-grouping"
 const COLUMN_VISIBILITY_STORAGE_KEY = "fleet-column-visibility"
+const SORTING_STORAGE_KEY = "fleet-sorting"
+const DEFAULT_SORT_STORAGE_KEY = "fleet-default-sort"
 
 // regPrefix backs registration-prefix grouping and sorting only and is never rendered.
 const ALWAYS_HIDDEN_COLUMNS: VisibilityState = { regPrefix: false }
@@ -57,17 +60,65 @@ export function FleetContent({
     localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularity }))
   }, [grouping, dateGranularity])
 
+  const [defaultSorting, setDefaultSorting] = useState<SortingState>(() => {
+    if (typeof window === "undefined") return []
+    const saved = localStorage.getItem(DEFAULT_SORT_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  })
+
+  const [sorting, setSorting] = useState<SortingState | null>(null)
+
   useEffect(() => {
     localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(columnVisibility))
   }, [columnVisibility])
 
+  useEffect(() => {
+    const saved =
+      localStorage.getItem(SORTING_STORAGE_KEY) ??
+      localStorage.getItem(DEFAULT_SORT_STORAGE_KEY)
+    setSorting(saved ? JSON.parse(saved) : [])
+  }, [])
+
+  useEffect(() => {
+    if (sorting !== null) {
+      localStorage.setItem(SORTING_STORAGE_KEY, JSON.stringify(sorting))
+    }
+  }, [sorting])
+
+  useEffect(() => {
+    localStorage.setItem(DEFAULT_SORT_STORAGE_KEY, JSON.stringify(defaultSorting))
+  }, [defaultSorting])
+
+  function handleSortingChange(updaterOrValue: Updater<SortingState>) {
+    setSorting((previousSorting) => {
+      const current = previousSorting ?? []
+      const next =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(current)
+          : updaterOrValue
+      return next.length === 0 ? defaultSorting : next
+    })
+  }
+
+  function handleDefaultSortingChange(next: SortingState) {
+    setDefaultSorting(next)
+    setSorting(next)
+  }
+
   function handleColumnVisibilityChange(updaterOrValue: Updater<VisibilityState>) {
-    setColumnVisibility((previous) => ({
+    const next: VisibilityState = {
       ...(typeof updaterOrValue === "function"
-        ? updaterOrValue(previous)
+        ? updaterOrValue(columnVisibility)
         : updaterOrValue),
       ...ALWAYS_HIDDEN_COLUMNS,
-    }))
+    }
+    setColumnVisibility(next)
+
+    const isStillVisible = ({ id }: { id: string }) => next[id] !== false
+    setSorting((previousSorting) => previousSorting?.filter(isStillVisible) ?? null)
+    setDefaultSorting((previousDefaultSorting) =>
+      previousDefaultSorting.filter(isStillVisible)
+    )
   }
 
   function setGrouping(next: GroupingState) {
@@ -126,17 +177,26 @@ export function FleetContent({
           value={columnVisibility}
           onChange={handleColumnVisibilityChange}
         />
+        <FleetDefaultSortPopover
+          value={defaultSorting}
+          onChange={handleDefaultSortingChange}
+          columnVisibility={columnVisibility}
+        />
       </div>
-      <FleetTable
-        key={dateGranularity}
-        data={data}
-        onSelectionChange={setSelectedIds}
-        resetKey={resetKey}
-        grouping={grouping}
-        dateGranularity={dateGranularity}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={handleColumnVisibilityChange}
-      />
+      {sorting !== null && (
+        <FleetTable
+          key={dateGranularity}
+          data={data}
+          onSelectionChange={setSelectedIds}
+          resetKey={resetKey}
+          grouping={grouping}
+          dateGranularity={dateGranularity}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={handleColumnVisibilityChange}
+          sorting={sorting}
+          onSortingChange={handleSortingChange}
+        />
+      )}
       <FleetCustomOperatorDialog
         open={isCustomOperatorDialogOpen}
         onOpenChange={setIsCustomOperatorDialogOpen}

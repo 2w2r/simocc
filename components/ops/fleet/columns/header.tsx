@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { FleetDateRangeFilterPopover } from "@/components/ops/fleet/fleet-date-range-filter-popover"
 
-function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
+export function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
     if (sorted === "asc") return <ArrowDown className="size-3.5" />
     if (sorted === "desc") return <ArrowUp className="size-3.5" />
     return <ArrowUpDown className="size-3.5 opacity-40" />

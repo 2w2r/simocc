@@ -32,7 +32,6 @@ import { Aircraft } from "@/components/ops/fleet/types"
 import { FleetGroupRow } from "@/components/ops/fleet/grouping/group-row"
 import { DateGranularity, findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
 
-const SORTING_STORAGE_KEY = "fleet-sorting"
 const FILTERS_STORAGE_KEY = "fleet-filters"
 
 export function FleetTable({
@@ -43,6 +42,8 @@ export function FleetTable({
   dateGranularity,
   columnVisibility,
   onColumnVisibilityChange,
+  sorting,
+  onSortingChange,
 }: {
   data: Aircraft[]
   onSelectionChange: (ids: string[]) => void
@@ -51,9 +52,10 @@ export function FleetTable({
   dateGranularity: DateGranularity
   columnVisibility: VisibilityState
   onColumnVisibilityChange: OnChangeFn<VisibilityState>
+  sorting: SortingState
+  onSortingChange: OnChangeFn<SortingState>
 }) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [sorting, setSorting] = useState<SortingState | null>(null)
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
     if (typeof window === "undefined") return []
     const saved = localStorage.getItem(FILTERS_STORAGE_KEY)
@@ -73,41 +75,12 @@ export function FleetTable({
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem(SORTING_STORAGE_KEY)
-    setSorting(saved ? JSON.parse(saved) : [])
-  }, [])
-
-  useEffect(() => {
-    if (sorting !== null) {
-      localStorage.setItem(SORTING_STORAGE_KEY, JSON.stringify(sorting))
-    }
-  }, [sorting])
-
-  useEffect(() => {
     localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(columnFilters))
   }, [columnFilters])
 
   useEffect(() => {
     setRowSelection({})
   }, [resetKey])
-
-  // Clear sort for columns that are hidden.
-  useEffect(() => {
-    setSorting((previousSorting) => {
-      if (previousSorting === null) return previousSorting
-      const next = previousSorting.filter(({ id }) => columnVisibility[id] !== false)
-      return next.length === previousSorting.length ? previousSorting : next
-    })
-  }, [columnVisibility])
-
-  const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
-    setSorting((previousSorting) => {
-      const current = previousSorting ?? []
-      return typeof updaterOrValue === "function"
-        ? updaterOrValue(current)
-        : updaterOrValue
-    })
-  }
 
   const table = useReactTable({
     data,
@@ -118,15 +91,15 @@ export function FleetTable({
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     groupedColumnMode: false,
-    onSortingChange: handleSortingChange,
+    onSortingChange,
     onRowSelectionChange: setRowSelection,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange,
     meta: {
-      rawSorting: sorting ?? [],
+      rawSorting: sorting,
     },
     state: {
-      sorting: sorting ?? [],
+      sorting,
       rowSelection,
       columnFilters,
       grouping,
@@ -139,8 +112,6 @@ export function FleetTable({
     const ids = table.getSelectedRowModel().rows.map((row) => row.original.id)
     onSelectionChange(ids)
   }, [rowSelection])
-
-  if (sorting === null) return null
 
   const dataColumnCount = table.getVisibleLeafColumns().length - 1
   const selectColumnWidth = 48
