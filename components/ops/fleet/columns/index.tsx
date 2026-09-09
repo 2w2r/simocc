@@ -91,6 +91,7 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             accessorKey: "registration",
             filterFn: regPrefixFilter,
             sortingFn: "text",
+            enableHiding: false,
             meta: { label: "Registration" },
             header: createStringColumnHeader("Registration", (row) => getRegPrefix(row.registration)),
         },
@@ -150,6 +151,7 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
         {
             id: "select",
             size: 0,
+            enableHiding: false,
             header: ({ table }) => (
                 <Checkbox
                     checked={table.getIsAllPageRowsSelected()}

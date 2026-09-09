@@ -6,6 +6,7 @@ import {
   OnChangeFn,
   RowSelectionState,
   SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -40,12 +41,16 @@ export function FleetTable({
   resetKey,
   grouping,
   dateGranularity,
+  columnVisibility,
+  onColumnVisibilityChange,
 }: {
   data: Aircraft[]
   onSelectionChange: (ids: string[]) => void
   resetKey?: number
   grouping: GroupingState
   dateGranularity: DateGranularity
+  columnVisibility: VisibilityState
+  onColumnVisibilityChange: OnChangeFn<VisibilityState>
 }) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [sorting, setSorting] = useState<SortingState | null>(null)
@@ -86,6 +91,15 @@ export function FleetTable({
     setRowSelection({})
   }, [resetKey])
 
+  // Clear sort for columns that are hidden.
+  useEffect(() => {
+    setSorting((previousSorting) => {
+      if (previousSorting === null) return previousSorting
+      const next = previousSorting.filter(({ id }) => columnVisibility[id] !== false)
+      return next.length === previousSorting.length ? previousSorting : next
+    })
+  }, [columnVisibility])
+
   const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
     setSorting((previousSorting) => {
       const current = previousSorting ?? []
@@ -107,6 +121,7 @@ export function FleetTable({
     onSortingChange: handleSortingChange,
     onRowSelectionChange: setRowSelection,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange,
     meta: {
       rawSorting: sorting ?? [],
     },
@@ -116,11 +131,7 @@ export function FleetTable({
       columnFilters,
       grouping,
       expanded: true,
-    },
-    initialState: {
-      columnVisibility: {
-        regPrefix: false,
-      },
+      columnVisibility,
     },
   })
 

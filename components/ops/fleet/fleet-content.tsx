@@ -9,11 +9,16 @@ import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
 import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
-import { GroupingState } from "@tanstack/react-table"
+import { GroupingState, Updater, VisibilityState } from "@tanstack/react-table"
 import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
+import { FleetColumnVisibilityPopover } from "@/components/ops/fleet/fleet-column-visibility-popover"
 import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
 
 const GROUPING_STORAGE_KEY = "fleet-grouping"
+const COLUMN_VISIBILITY_STORAGE_KEY = "fleet-column-visibility"
+
+// regPrefix backs registration-prefix grouping and sorting only and is never rendered.
+const ALWAYS_HIDDEN_COLUMNS: VisibilityState = { regPrefix: false }
 
 type PersistedGroupingState = {
   grouping: GroupingState
@@ -40,9 +45,30 @@ export function FleetContent({
     return saved ? JSON.parse(saved) : { grouping: [], dateGranularity: "day" }
   })
 
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === "undefined") return ALWAYS_HIDDEN_COLUMNS
+    const saved = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY)
+    return saved
+      ? { ...JSON.parse(saved), ...ALWAYS_HIDDEN_COLUMNS }
+      : ALWAYS_HIDDEN_COLUMNS
+  })
+
   useEffect(() => {
     localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularity }))
   }, [grouping, dateGranularity])
+
+  useEffect(() => {
+    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(columnVisibility))
+  }, [columnVisibility])
+
+  function handleColumnVisibilityChange(updaterOrValue: Updater<VisibilityState>) {
+    setColumnVisibility((previous) => ({
+      ...(typeof updaterOrValue === "function"
+        ? updaterOrValue(previous)
+        : updaterOrValue),
+      ...ALWAYS_HIDDEN_COLUMNS,
+    }))
+  }
 
   function setGrouping(next: GroupingState) {
     setPersistedGrouping((prev) => ({ ...prev, grouping: next }))
@@ -89,12 +115,18 @@ export function FleetContent({
           setIsCustomOperatorDialogOpen(true)
         }}
       />
-      <FleetGroupSelector
-        value={grouping}
-        onChange={setGrouping}
-        dateGranularity={dateGranularity}
-        onDateGranularityChange={setDateGranularity}
-      />
+      <div className="flex items-center gap-1">
+        <FleetGroupSelector
+          value={grouping}
+          onChange={setGrouping}
+          dateGranularity={dateGranularity}
+          onDateGranularityChange={setDateGranularity}
+        />
+        <FleetColumnVisibilityPopover
+          value={columnVisibility}
+          onChange={handleColumnVisibilityChange}
+        />
+      </div>
       <FleetTable
         key={dateGranularity}
         data={data}
@@ -102,6 +134,8 @@ export function FleetContent({
         resetKey={resetKey}
         grouping={grouping}
         dateGranularity={dateGranularity}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={handleColumnVisibilityChange}
       />
       <FleetCustomOperatorDialog
         open={isCustomOperatorDialogOpen}
