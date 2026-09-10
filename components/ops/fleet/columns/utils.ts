@@ -1,4 +1,4 @@
-import { Table } from "@tanstack/react-table"
+import { ColumnDef, Table } from "@tanstack/react-table"
 
 export function uniqueOrdered<T>(
   items: T[],
@@ -11,6 +11,12 @@ export function uniqueOrdered<T>(
     seen.add(key)
     return true
   })
+}
+
+export function getColumnId<T>(column: ColumnDef<T>): string {
+  return "id" in column && column.id
+    ? column.id
+    : (column as { accessorKey: string }).accessorKey
 }
 
 export function getRegPrefix(registration: string): string {

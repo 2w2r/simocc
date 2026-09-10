@@ -1,4 +1,7 @@
+import { ColumnDef, GroupingState, SortingState } from "@tanstack/react-table"
+
 import { Aircraft } from "@/components/ops/fleet/types"
+import { getColumnId } from "@/components/ops/fleet/columns/utils"
 
 type SortKey = (row: Aircraft) => string
 
@@ -24,5 +27,28 @@ export function sortAllData(
   return [...allData].sort((a, b) => {
     const comparison = getKey(a).localeCompare(getKey(b))
     return activeSort.desc ? -comparison : comparison
+  })
+}
+
+export function resolveEffectiveSorting(
+  sorting: SortingState,
+  grouping: GroupingState,
+  columns: ColumnDef<Aircraft>[]
+): SortingState {
+  const derivedIdBySourceId = new Map(
+    columns
+      .filter(
+        (column) =>
+          column.meta?.derivedFrom && grouping.includes(getColumnId(column))
+      )
+      .map((column) => [column.meta!.derivedFrom!, getColumnId(column)])
+  )
+
+  return sorting.flatMap((entry) => {
+    const derivedId = derivedIdBySourceId.get(entry.id)
+    if (!derivedId || sorting.some((other) => other.id === derivedId)) {
+      return [entry]
+    }
+    return [{ id: derivedId, desc: entry.desc }, entry]
   })
 }

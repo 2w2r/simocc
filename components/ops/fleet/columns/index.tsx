@@ -21,7 +21,7 @@ function createStringColumnHeader(
 ) {
     return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
         const allData = table.options.data as Aircraft[]
-        const sortedData = sortAllData(allData, table.getState().sorting)
+        const sortedData = sortAllData(allData, table.options.meta?.rawSorting ?? [])
 
         const operatorAccessor = options?.operatorAccessor
 
@@ -100,7 +100,7 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             accessorFn: regPrefixAccessor,
             enableGrouping: true,
             sortingFn: "text",
-            meta: { groupingOnly: true, label: "Registration Prefix" },
+            meta: { groupingOnly: true, derivedFrom: "registration", label: "Registration Prefix" },
         },
         {
             accessorKey: "icaoCode",

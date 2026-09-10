@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table"
 import { FunnelX } from "lucide-react"
 import { buildColumns } from "@/components/ops/fleet/columns"
+import { resolveEffectiveSorting } from "@/components/ops/fleet/columns/sort"
 import { Aircraft } from "@/components/ops/fleet/types"
 import { FleetGroupRow } from "@/components/ops/fleet/grouping/group-row"
 import { DateGranularity, findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
@@ -65,6 +66,11 @@ export function FleetTable({
 
   const columns = useMemo(() => buildColumns(dateGranularity), [dateGranularity])
 
+  const effectiveSorting = useMemo(
+    () => resolveEffectiveSorting(sorting, grouping, columns),
+    [sorting, grouping, columns]
+  )
+
   function toggleGroupCollapse(rowId: string) {
     setCollapsedGroupIds((prev) => {
       const next = new Set(prev)
@@ -99,7 +105,7 @@ export function FleetTable({
       rawSorting: sorting,
     },
     state: {
-      sorting,
+      sorting: effectiveSorting,
       rowSelection,
       columnFilters,
       grouping,
