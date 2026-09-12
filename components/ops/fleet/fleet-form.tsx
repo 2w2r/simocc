@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import { Plus, TextSearch } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { addAircraft } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
@@ -12,44 +12,51 @@ import { Spinner } from "@/components/ui/spinner"
 import { StatusMessage } from "@/components/ui/status-message"
 import { cn } from "@/lib/utils"
 import { OperatorReference } from "@/lib/generated/prisma/client"
+import { FleetFormAircraftTypeCombobox } from "@/components/ops/fleet/fleet-form-aircraft-type-combobox"
 import { FleetFormOperatorCombobox } from "@/components/ops/fleet/fleet-form-operator-combobox"
-import { CustomOperator, Operator } from "@/components/ops/fleet/types"
+import { AircraftType, CustomAircraftType, CustomOperator, Operator } from "@/components/ops/fleet/types"
 
 type Errors = {
   registration?: string
-  icaoCode?: string
   general?: string
 }
 
 export function FleetForm({
   deleteButton,
+  customAircraftTypes,
   privateOperator,
   customOperators,
+  onAddCustomAircraftType,
+  onRemoveCustomAircraftType,
   onAddCustomOperator,
   onRemoveCustomOperator,
 }: {
   deleteButton?: React.ReactNode
+  customAircraftTypes: CustomAircraftType[]
   privateOperator: OperatorReference | null
   customOperators: CustomOperator[]
+  onAddCustomAircraftType: () => void
+  onRemoveCustomAircraftType: () => Promise<void>
   onAddCustomOperator: () => void
   onRemoveCustomOperator: () => Promise<void>
 }) {
   const [registration, setRegistration] = useState("")
-  const [icaoCode, setIcaoCode] = useState("")
+  const [selectedAircraftType, setSelectedAircraftType] = useState<AircraftType | null>(null)
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null)
   const [errors, setErrors] = useState<Errors>({})
   const [submitting, setSubmitting] = useState(false)
 
-  const canSubmit = registration.trim().length > 0 && icaoCode.trim().length > 0
+  const canSubmit = registration.trim().length > 0 && selectedAircraftType !== null
 
   async function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!selectedAircraftType) return
     setErrors({})
     setSubmitting(true)
 
     const formData = new FormData()
     formData.set("registration", registration)
-    formData.set("icaoCode", icaoCode)
+    formData.set("aircraftTypeId", selectedAircraftType.id)
     const effectiveOperator = selectedOperator ?? privateOperator
     if (effectiveOperator)
       formData.set("operatorId", effectiveOperator.id)
@@ -60,7 +67,7 @@ export function FleetForm({
       setErrors({ [result.error.field]: result.error.message })
     } else {
       setRegistration("")
-      setIcaoCode("")
+      setSelectedAircraftType(null)
       setSelectedOperator(null)
     }
 
@@ -95,36 +102,13 @@ export function FleetForm({
                 <StatusMessage variant="error" text={errors.registration} />
               )}
             </div>
-            <div className="flex flex-col gap-1">
-              <div className="relative">
-                <Input
-                  id="icaoCode"
-                  value={icaoCode}
-                  onChange={(e) => {
-                    setIcaoCode(e.target.value.toUpperCase())
-                    setErrors((prev) => ({ ...prev, icaoCode: undefined }))
-                  }}
-                  placeholder="Type"
-                  maxLength={4}
-                  className={cn(
-                    "pr-8 text-sm",
-                    errors.icaoCode && "border-destructive"
-                  )}
-                />
-                <a
-                  href="https://www.icao.int/operational-safety/doc-8643-aircraft-type-designators/search"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  tabIndex={-1}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2"
-                >
-                  <TextSearch className="size-4 text-muted-foreground hover:text-foreground" />
-                </a>
-              </div>
-              {errors.icaoCode && (
-                <StatusMessage variant="error" text={errors.icaoCode} />
-              )}
-            </div>
+            <FleetFormAircraftTypeCombobox
+              customAircraftTypes={customAircraftTypes}
+              selectedAircraftType={selectedAircraftType}
+              onAircraftTypeChange={setSelectedAircraftType}
+              onAddCustomAircraftType={onAddCustomAircraftType}
+              onRemoveCustomAircraftType={onRemoveCustomAircraftType}
+            />
             <FleetFormOperatorCombobox
               privateOperator={privateOperator}
               customOperators={customOperators}

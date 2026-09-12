@@ -98,7 +98,7 @@ export function FleetFormOperatorCombobox({
                     )}
                 </ComboboxList>
                 {operatorQuery.length === 0 ? (
-                    <ButtonGroup className="mx-1 mb-1 w-[calc(100%-0.5rem)]">
+                    <ButtonGroup className="mx-1 mb-1 w-[calc(100%-0.5rem)] group-data-empty/combobox-content:mt-1">
                         <Button variant="outline" size="icon" onClick={onAddCustomOperator}>
                             <Plus className="size-3.5" />
                         </Button>

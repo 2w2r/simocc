@@ -4,10 +4,19 @@ import { revalidatePath } from "next/cache"
 
 import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
-import { customOperatorQueryArgs, CustomOperator, removableOperatorQueryArgs, Aircraft, aircraftQueryArgs } from "@/components/ops/fleet/types"
+import {
+  Aircraft,
+  aircraftQueryArgs,
+  customAircraftTypeQueryArgs,
+  CustomAircraftType,
+  removableAircraftTypeQueryArgs,
+  customOperatorQueryArgs,
+  CustomOperator,
+  removableOperatorQueryArgs,
+} from "@/components/ops/fleet/types"
 
 type AddAircraftError = {
-  field: "registration" | "icaoCode" | "general"
+  field: "registration" | "general"
   message: string
 }
 
@@ -17,9 +26,49 @@ type AddAircraftResult =
 
 type ActionError = { field: string; message: string }
 
+type RemoveCustomAircraftTypeResult = {
+  removedCount: number
+  blocked: { id: string; label: string }[]
+}
+
 type RemoveCustomOperatorResult = {
   removedCount: number
   blocked: { id: string; name: string }[]
+}
+
+const AIRCRAFT_TYPE_RESULT_LIMIT = 20
+const AIRCRAFT_TYPE_FETCH_LIMIT = 100
+
+function scoreTypeCodeMatch(
+  type: { icaoCode: string },
+  upper: string
+): number {
+  if (type.icaoCode === upper) return 0
+  if (type.icaoCode.startsWith(upper)) return 1
+  return 2
+}
+
+function scoreTypeNameMatch(
+  type: { manufacturer: string; model: string },
+  tokens: string[]
+): number {
+  const manufacturer = type.manufacturer.toLowerCase()
+  const model = type.model.toLowerCase()
+  return tokens.some(
+    (token) => manufacturer.startsWith(token) || model.startsWith(token)
+  )
+    ? 0
+    : 1
+}
+
+function compareTypeName(
+  a: { manufacturer: string; model: string },
+  b: { manufacturer: string; model: string }
+): number {
+  return (
+    a.manufacturer.localeCompare(b.manufacturer) ||
+    a.model.localeCompare(b.model)
+  )
 }
 
 function scoreCodeMatch(
@@ -81,10 +130,10 @@ export async function addAircraft(
   const registration = (formData.get("registration") as string)
     ?.trim()
     .toUpperCase()
-  const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase()
+  const aircraftTypeId = (formData.get("aircraftTypeId") as string)?.trim() || null
   const operatorId = (formData.get("operatorId") as string)?.trim() || null
 
-  if (!registration || !icaoCode || !operatorId)
+  if (!registration || !aircraftTypeId || !operatorId)
     return { error: { field: "general" as const, message: "Invalid request." } }
 
   if (!/^[A-Z0-9]{1,2}-?[A-Z0-9]{1,5}$/.test(registration))
@@ -95,20 +144,12 @@ export async function addAircraft(
       },
     }
 
-  if (!/^[A-Z0-9]{2,4}$/.test(icaoCode))
-    return {
-      error: {
-        field: "icaoCode" as const,
-        message: "Invalid ICAO Aircraft Type Designator format.",
-      },
-    }
-
   try {
     await prisma.aircraft.create({
       data: {
         userId: session.user.id,
         registration,
-        icaoCode,
+        aircraftTypeId,
         operatorId,
       },
     })
@@ -138,6 +179,64 @@ export async function removeAircraftMany(ids: string[]) {
   })
 
   revalidatePath("/fleet")
+}
+
+export async function searchAircraftTypes(query: string) {
+  if (!query || query.trim().length < 1) return []
+
+  const session = await getSession()
+
+  const trimmed = query.trim()
+  const upper = trimmed.toUpperCase()
+  const tokens = trimmed.split(/\s+/).filter(Boolean)
+  const typeScope = {
+    OR: [{ userId: null }, { userId: session?.user.id }],
+  }
+
+  const codeMatches = await prisma.aircraftTypeReference.findMany({
+    where: {
+      AND: [typeScope, { icaoCode: { contains: upper } }],
+    },
+    take: AIRCRAFT_TYPE_FETCH_LIMIT,
+    orderBy: [{ icaoCode: "asc" }, { manufacturer: "asc" }, { model: "asc" }],
+  })
+
+  const sortedCodeMatches = codeMatches.sort(
+    (a, b) =>
+      scoreTypeCodeMatch(a, upper) - scoreTypeCodeMatch(b, upper) ||
+      a.icaoCode.localeCompare(b.icaoCode) ||
+      compareTypeName(a, b)
+  )
+
+  const codeMatchIds = new Set(sortedCodeMatches.map((type) => type.id))
+
+  const lowerTokens = tokens.map((token) => token.toLowerCase())
+
+  const nameMatches = await prisma.aircraftTypeReference.findMany({
+    where: {
+      AND: [
+        typeScope,
+        { id: { notIn: [...codeMatchIds] } },
+        ...tokens.map((token) => ({
+          OR: [
+            { icaoCode: { contains: token.toUpperCase() } },
+            { manufacturer: { contains: token, mode: "insensitive" as const } },
+            { model: { contains: token, mode: "insensitive" as const } },
+          ],
+        })),
+      ],
+    },
+    take: AIRCRAFT_TYPE_FETCH_LIMIT,
+    orderBy: [{ manufacturer: "asc" }, { model: "asc" }],
+  })
+
+  const sortedNameMatches = nameMatches.sort(
+    (a, b) =>
+      scoreTypeNameMatch(a, lowerTokens) - scoreTypeNameMatch(b, lowerTokens) ||
+      compareTypeName(a, b)
+  )
+
+  return mergeDeduped(sortedCodeMatches, sortedNameMatches, AIRCRAFT_TYPE_RESULT_LIMIT)
 }
 
 export async function searchOperators(query: string) {
@@ -201,6 +300,105 @@ export async function searchOperators(query: string) {
   })
 
   return mergeDeduped(sortedCodeMatches, nameMatches, 10)
+}
+
+export async function addCustomAircraftType(
+  formData: FormData
+): Promise<{ success: true; error?: never } | { error: ActionError; success?: never }> {
+  const session = await getSession()
+  if (!session)
+    return { error: { field: "general", message: "Not authenticated." } }
+
+  const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase()
+  const manufacturer = (formData.get("manufacturer") as string)?.trim()
+  const model = (formData.get("model") as string)?.trim()
+
+  if (!icaoCode || !/^[A-Z0-9]{2,4}$/.test(icaoCode))
+    return {
+      error: {
+        field: "icaoCode",
+        message: "Invalid ICAO Aircraft Type Designator format.",
+      },
+    }
+
+  if (!manufacturer)
+    return { error: { field: "manufacturer", message: "Please enter a manufacturer." } }
+
+  if (!model)
+    return { error: { field: "model", message: "Please enter a model." } }
+
+  try {
+    await prisma.aircraftTypeReference.create({
+      data: {
+        userId: session.user.id,
+        icaoCode,
+        manufacturer,
+        model,
+      },
+    })
+  } catch {
+    return {
+      error: { field: "general", message: "Aircraft type already exists." },
+    }
+  }
+
+  revalidatePath("/fleet")
+  return { success: true }
+}
+
+export async function getCustomAircraftTypes(): Promise<CustomAircraftType[]> {
+  const session = await getSession()
+  if (!session) return []
+
+  const types = await prisma.aircraftTypeReference.findMany({
+    where: { userId: session.user.id },
+    orderBy: [{ manufacturer: "asc" }, { model: "asc" }],
+    ...customAircraftTypeQueryArgs,
+  })
+
+  return types.map(({ _count, ...type }) => ({
+    ...type,
+    inUse: _count.aircraft > 0,
+  }))
+}
+
+export async function removeCustomAircraftType(
+  ids: string[]
+): Promise<{ result: RemoveCustomAircraftTypeResult; error?: never } | { error: ActionError; result?: never }> {
+  const session = await getSession()
+  if (!session)
+    return { error: { field: "general", message: "Not authenticated." } }
+
+  const candidates = await prisma.aircraftTypeReference.findMany({
+    where: { id: { in: ids }, userId: session.user.id },
+    ...removableAircraftTypeQueryArgs,
+  })
+
+  const blocked = candidates
+    .filter((type) => type._count.aircraft > 0)
+    .map(({ id, icaoCode, manufacturer, model }) => ({
+      id,
+      label: `${icaoCode} ${manufacturer} ${model}`,
+    }))
+
+  const removableIds = candidates
+    .filter((type) => type._count.aircraft === 0)
+    .map((type) => type.id)
+
+  if (removableIds.length > 0) {
+    try {
+      await prisma.aircraftTypeReference.deleteMany({
+        where: { id: { in: removableIds }, userId: session.user.id },
+      })
+    } catch {
+      return {
+        error: { field: "general", message: "Failed to remove aircraft type(s)." },
+      }
+    }
+  }
+
+  revalidatePath("/fleet")
+  return { result: { removedCount: removableIds.length, blocked } }
 }
 
 export async function getPrivateOperator() {

@@ -7,7 +7,7 @@ type SortKey = (row: Aircraft) => string
 
 const SORT_KEY_EXTRACTORS: Record<string, SortKey> = {
   registration: (row) => row.registration,
-  icaoCode: (row) => row.icaoCode,
+  aircraftTypeIcaoCode: (row) => row.aircraftType.icaoCode,
   operator: (row) =>
     row.operator?.icaoCode || row.operator?.iataCode
       ? (row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF")

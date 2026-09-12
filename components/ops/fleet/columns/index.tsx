@@ -103,12 +103,13 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             meta: { groupingOnly: true, derivedFrom: "registration", label: "Registration Prefix" },
         },
         {
-            accessorKey: "icaoCode",
+            id: "aircraftTypeIcaoCode",
+            accessorFn: (row) => row.aircraftType.icaoCode,
             filterFn: multiSelectFilter,
             enableGrouping: true,
             sortingFn: "text",
             meta: { label: "Type" },
-            header: createStringColumnHeader("Type", (row) => row.icaoCode),
+            header: createStringColumnHeader("Type", (row) => row.aircraftType.icaoCode),
         },
         {
             id: "operator",

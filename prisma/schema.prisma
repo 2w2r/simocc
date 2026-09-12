@@ -3,6 +3,30 @@
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
+enum AircraftTypeDescription {
+  LANDPLANE
+  SEAPLANE
+  AMPHIBIAN
+  HELICOPTER
+  GYROCOPTER
+  TILTROTOR
+}
+
+enum AircraftTypeEngineCategory {
+  PISTON
+  TURBOPROP_TURBOSHAFT
+  JET
+  ELECTRIC
+  ROCKET
+}
+
+enum AircraftTypeWakeTurbulenceCategory {
+  L
+  M
+  H
+  J
+}
+
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -25,6 +49,7 @@ model User {
   preferences   UserPreferences?
   operatorReferences OperatorReference[]
   aircraft Aircraft[]
+  aircraftTypeReferences AircraftTypeReference[]
 
   @@unique([email])
   @@map("user")
@@ -102,11 +127,36 @@ model Aircraft {
   userId       String
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   registration String
-  icaoCode     String
+
+  aircraftTypeId String
+  aircraftType   AircraftTypeReference @relation(fields: [aircraftTypeId], references: [id])
+  
   operatorId   String
   operator     OperatorReference @relation(fields: [operatorId], references: [id])
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  @@unique([userId, registration, operatorId, icaoCode])
+  @@unique([userId, registration, operatorId, aircraftTypeId])
+}
+
+model AircraftTypeReference {
+  id           String  @id @default(cuid())
+  userId       String?
+  user         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  icaoCode     String
+  manufacturer String
+  model        String
+
+  description             AircraftTypeDescription?
+  engineCategory           AircraftTypeEngineCategory?
+  engineCount             String?
+  wakeTurbulenceCategory  AircraftTypeWakeTurbulenceCategory[]
+
+  deprecated   Boolean @default(false)
+
+  aircraft     Aircraft[]
+
+  @@unique([manufacturer, model, icaoCode])
+  @@index([icaoCode])
 }

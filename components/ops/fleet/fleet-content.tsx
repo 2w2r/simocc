@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 
-import { getCustomOperators, removeAircraftMany } from "@/actions/fleet"
+import { getCustomAircraftTypes, getCustomOperators, removeAircraftMany } from "@/actions/fleet"
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
 import { FleetTable } from "@/components/ops/fleet/fleet-table"
 import type { OperatorReference } from "@/lib/generated/prisma/client"
 import { FleetRemoveAircraftDialog } from "@/components/ops/fleet/fleet-remove-aircraft-dialog"
+import { FleetCustomAircraftTypeDialog } from "@/components/ops/fleet/custom-aircraft-type-dialog"
 import { FleetCustomOperatorDialog } from "@/components/ops/fleet/custom-operator-dialog"
-import { Aircraft, CustomOperator } from "@/components/ops/fleet/types"
+import { Aircraft, CustomAircraftType, CustomOperator } from "@/components/ops/fleet/types"
 import { GroupingState, SortingState, Updater, VisibilityState } from "@tanstack/react-table"
 import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
 import { FleetColumnVisibilityPopover } from "@/components/ops/fleet/fleet-column-visibility-popover"
@@ -30,16 +31,21 @@ type PersistedGroupingState = {
 
 export function FleetContent({
   data,
+  customAircraftTypes: initialCustomAircraftTypes,
   privateOperator,
   customOperators: initialCustomOperators,
 }: {
   data: Aircraft[]
-  customOperators: CustomOperator[]
+  customAircraftTypes: CustomAircraftType[]
   privateOperator: OperatorReference | null
+  customOperators: CustomOperator[]
 }) {
+  const [customAircraftTypes, setCustomAircraftTypes] = useState(initialCustomAircraftTypes)
   const [customOperators, setCustomOperators] = useState(initialCustomOperators)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [resetKey, setResetKey] = useState(0)
+  const [isCustomAircraftTypeDialogOpen, setIsCustomAircraftTypeDialogOpen] = useState(false)
+  const [customAircraftTypeMode, setCustomAircraftTypeMode] = useState<"add" | "remove">("add")
   const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
   const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
   const [{ grouping, dateGranularity }, setPersistedGrouping] = useState<PersistedGroupingState>(() => {
@@ -139,6 +145,11 @@ export function FleetContent({
     setSelectedIds([])
   }
 
+  async function refreshCustomAircraftTypes() {
+    const types = await getCustomAircraftTypes()
+    setCustomAircraftTypes(types)
+  }
+
   async function refreshCustomOperators() {
     const operators = await getCustomOperators()
     setCustomOperators(operators)
@@ -147,6 +158,7 @@ export function FleetContent({
   return (
     <div className="flex flex-col gap-2">
       <FleetForm
+        customAircraftTypes={customAircraftTypes}
         privateOperator={privateOperator}
         customOperators={customOperators}
         deleteButton={
@@ -155,6 +167,15 @@ export function FleetContent({
             onConfirm={handleRemoveSelected}
           />
         }
+        onAddCustomAircraftType={() => {
+          setCustomAircraftTypeMode("add")
+          setIsCustomAircraftTypeDialogOpen(true)
+        }}
+        onRemoveCustomAircraftType={async () => {
+          await refreshCustomAircraftTypes()
+          setCustomAircraftTypeMode("remove")
+          setIsCustomAircraftTypeDialogOpen(true)
+        }}
         onAddCustomOperator={() => {
           setCustomOperatorMode("add")
           setIsCustomOperatorDialogOpen(true)
@@ -197,6 +218,13 @@ export function FleetContent({
           onSortingChange={handleSortingChange}
         />
       )}
+      <FleetCustomAircraftTypeDialog
+        open={isCustomAircraftTypeDialogOpen}
+        onOpenChange={setIsCustomAircraftTypeDialogOpen}
+        mode={customAircraftTypeMode}
+        customAircraftTypes={customAircraftTypes}
+        onSuccess={refreshCustomAircraftTypes}
+      />
       <FleetCustomOperatorDialog
         open={isCustomOperatorDialogOpen}
         onOpenChange={setIsCustomOperatorDialogOpen}
