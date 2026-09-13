@@ -66,69 +66,66 @@ export function FleetContent({
   const [customAircraftTypeMode, setCustomAircraftTypeMode] = useState<"add" | "remove">("add")
   const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
   const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
-  const [rowFilters, setRowFilters] = useState<RowFilters>(() => {
-    if (typeof window === "undefined") return DEFAULT_ROW_FILTERS
-    const saved = localStorage.getItem(ROW_FILTERS_STORAGE_KEY)
-    return saved ? { ...DEFAULT_ROW_FILTERS, ...JSON.parse(saved) } : DEFAULT_ROW_FILTERS
-  })
-  const [{ grouping, dateGranularities }, setPersistedGrouping] = useState<PersistedGroupingState>(() => {
-    if (typeof window === "undefined") return DEFAULT_GROUPING_STATE
-    return parsePersistedGrouping(localStorage.getItem(GROUPING_STORAGE_KEY))
-  })
-
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
-    if (typeof window === "undefined") return DEFAULT_COLUMN_VISIBILITY
-    const saved = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY)
-    return saved
-      ? { ...DEFAULT_COLUMN_VISIBILITY, ...JSON.parse(saved), ...ALWAYS_HIDDEN_COLUMNS }
-      : DEFAULT_COLUMN_VISIBILITY
-  })
+  const [rowFilters, setRowFilters] = useState<RowFilters>(DEFAULT_ROW_FILTERS)
+  const [{ grouping, dateGranularities }, setPersistedGrouping] =
+    useState<PersistedGroupingState>(DEFAULT_GROUPING_STATE)
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(DEFAULT_COLUMN_VISIBILITY)
+  const [defaultSorting, setDefaultSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularities }))
-  }, [grouping, dateGranularities])
+    const savedRowFilters = localStorage.getItem(ROW_FILTERS_STORAGE_KEY)
+    const savedVisibility = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY)
+    const savedDefaultSort = localStorage.getItem(DEFAULT_SORT_STORAGE_KEY)
+    const savedSort = localStorage.getItem(SORTING_STORAGE_KEY) ?? savedDefaultSort
 
-  useEffect(() => {
-    localStorage.setItem(ROW_FILTERS_STORAGE_KEY, JSON.stringify(rowFilters))
-  }, [rowFilters])
-
-  const visibleData = useMemo(() => applyRowFilters(data, rowFilters), [data, rowFilters])
-
-  const [defaultSorting, setDefaultSorting] = useState<SortingState>(() => {
-    if (typeof window === "undefined") return []
-    const saved = localStorage.getItem(DEFAULT_SORT_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : []
-  })
-
-  const [sorting, setSorting] = useState<SortingState | null>(null)
-
-  useEffect(() => {
-    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(columnVisibility))
-  }, [columnVisibility])
-
-  useEffect(() => {
-    const saved =
-      localStorage.getItem(SORTING_STORAGE_KEY) ??
-      localStorage.getItem(DEFAULT_SORT_STORAGE_KEY)
-    setSorting(saved ? JSON.parse(saved) : [])
+    setRowFilters(
+      savedRowFilters ? { ...DEFAULT_ROW_FILTERS, ...JSON.parse(savedRowFilters) } : DEFAULT_ROW_FILTERS
+    )
+    setPersistedGrouping(parsePersistedGrouping(localStorage.getItem(GROUPING_STORAGE_KEY)))
+    setColumnVisibility(
+      savedVisibility
+        ? { ...DEFAULT_COLUMN_VISIBILITY, ...JSON.parse(savedVisibility), ...ALWAYS_HIDDEN_COLUMNS }
+        : DEFAULT_COLUMN_VISIBILITY
+    )
+    setDefaultSorting(savedDefaultSort ? JSON.parse(savedDefaultSort) : [])
+    setSorting(savedSort ? JSON.parse(savedSort) : [])
+    setHydrated(true)
   }, [])
 
   useEffect(() => {
-    if (sorting !== null) {
-      localStorage.setItem(SORTING_STORAGE_KEY, JSON.stringify(sorting))
-    }
-  }, [sorting])
+    if (!hydrated) return
+    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularities }))
+  }, [hydrated, grouping, dateGranularities])
 
   useEffect(() => {
+    if (!hydrated) return
+    localStorage.setItem(ROW_FILTERS_STORAGE_KEY, JSON.stringify(rowFilters))
+  }, [hydrated, rowFilters])
+
+  useEffect(() => {
+    if (!hydrated) return
+    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(columnVisibility))
+  }, [hydrated, columnVisibility])
+
+  useEffect(() => {
+    if (!hydrated) return
+    localStorage.setItem(SORTING_STORAGE_KEY, JSON.stringify(sorting))
+  }, [hydrated, sorting])
+
+  useEffect(() => {
+    if (!hydrated) return
     localStorage.setItem(DEFAULT_SORT_STORAGE_KEY, JSON.stringify(defaultSorting))
-  }, [defaultSorting])
+  }, [hydrated, defaultSorting])
+
+  const visibleData = useMemo(() => applyRowFilters(data, rowFilters), [data, rowFilters])
 
   function handleSortingChange(updaterOrValue: Updater<SortingState>) {
     setSorting((previousSorting) => {
-      const current = previousSorting ?? []
       const next =
         typeof updaterOrValue === "function"
-          ? updaterOrValue(current)
+          ? updaterOrValue(previousSorting)
           : updaterOrValue
       return next.length === 0 ? defaultSorting : next
     })
@@ -149,7 +146,7 @@ export function FleetContent({
     setColumnVisibility(next)
 
     const isStillVisible = ({ id }: { id: string }) => next[id] !== false
-    setSorting((previousSorting) => previousSorting?.filter(isStillVisible) ?? null)
+    setSorting((previousSorting) => previousSorting.filter(isStillVisible))
     setDefaultSorting((previousDefaultSorting) =>
       previousDefaultSorting.filter(isStillVisible)
     )
@@ -224,38 +221,40 @@ export function FleetContent({
           setIsCustomOperatorDialogOpen(true)
         }}
       />
-      <div className="flex items-center gap-1">
-        <FleetGroupSelector
-          value={grouping}
-          onChange={setGrouping}
-          dateGranularities={dateGranularities}
-          onDateGranularityChange={setDateGranularity}
-        />
-        <FleetColumnVisibilityPopover
-          value={columnVisibility}
-          onChange={handleColumnVisibilityChange}
-        />
-        <FleetDefaultSortPopover
-          value={defaultSorting}
-          onChange={handleDefaultSortingChange}
-          columnVisibility={columnVisibility}
-        />
-        <FleetRowFilters value={rowFilters} onChange={handleRowFiltersChange} />
-      </div>
-      {sorting !== null && (
-        <FleetTable
-          key={JSON.stringify(dateGranularities)}
-          data={visibleData}
-          hasExternalFilters={hasActiveRowFilters(rowFilters)}
-          onSelectionChange={setSelectedIds}
-          resetKey={resetKey}
-          grouping={grouping}
-          dateGranularities={dateGranularities}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={handleColumnVisibilityChange}
-          sorting={sorting}
-          onSortingChange={handleSortingChange}
-        />
+      {hydrated && (
+        <>
+          <div className="flex items-center gap-1">
+            <FleetGroupSelector
+              value={grouping}
+              onChange={setGrouping}
+              dateGranularities={dateGranularities}
+              onDateGranularityChange={setDateGranularity}
+            />
+            <FleetColumnVisibilityPopover
+              value={columnVisibility}
+              onChange={handleColumnVisibilityChange}
+            />
+            <FleetDefaultSortPopover
+              value={defaultSorting}
+              onChange={handleDefaultSortingChange}
+              columnVisibility={columnVisibility}
+            />
+            <FleetRowFilters value={rowFilters} onChange={handleRowFiltersChange} />
+          </div>
+          <FleetTable
+            key={JSON.stringify(dateGranularities)}
+            data={visibleData}
+            hasExternalFilters={hasActiveRowFilters(rowFilters)}
+            onSelectionChange={setSelectedIds}
+            resetKey={resetKey}
+            grouping={grouping}
+            dateGranularities={dateGranularities}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={handleColumnVisibilityChange}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+          />
+        </>
       )}
       <FleetCustomAircraftTypeDialog
         open={isCustomAircraftTypeDialogOpen}
