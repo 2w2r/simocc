@@ -21,7 +21,7 @@ type SortableColumn = {
   label: string
 }
 
-const sortableColumns: SortableColumn[] = buildColumns("day")
+const sortableColumns: SortableColumn[] = buildColumns()
   .filter((column) => column.enableSorting !== false && !column.meta?.groupingOnly)
   .map((column) => {
     const id = "id" in column ? column.id! : (column as { accessorKey: string }).accessorKey

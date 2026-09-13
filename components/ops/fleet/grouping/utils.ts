@@ -1,6 +1,10 @@
 import { OnChangeFn, Row, RowSelectionState } from "@tanstack/react-table"
 
+import { EMPTY_VALUE } from "@/components/ops/fleet/columns/utils"
+
 export type DateGranularity = "day" | "month" | "year"
+export type DateGranularities = Record<string, DateGranularity> // keyed by column id
+export const DEFAULT_DATE_GRANULARITY: DateGranularity = "day"
 export type FoldedEntry = { value: string; count: number }
 
 export function getLeafRows<T>(row: Row<T>): Row<T>[] {
@@ -95,8 +99,9 @@ export function resolveGroupDisplayValue<T extends { operator: { icaoCode: strin
   return String(row.groupingValue)
 }
 
-export function getDateGroupingValue(row: { createdAt: Date | string }, granularity: DateGranularity): string {
-  const d = new Date(row.createdAt)
+export function getDateGroupingValue(date: Date | string | null, granularity: DateGranularity): string {
+  if (!date) return EMPTY_VALUE
+  const d = new Date(date)
   const year = String(d.getUTCFullYear())
   const month = String(d.getUTCMonth() + 1).padStart(2, "0")
   const day = String(d.getUTCDate()).padStart(2, "0")

@@ -38,7 +38,9 @@ export function dateRangeFilter(
   filterValue?: { from?: Date; to?: Date }
 ): boolean {
   if (!filterValue?.from && !filterValue?.to) return true
-  const cellDate = new Date(row.getValue(columnId) as Date)
+  const value = row.getValue(columnId) as Date | null
+  if (!value) return false
+  const cellDate = new Date(value)
   if (filterValue.from && cellDate < filterValue.from) return false
   if (filterValue.to) {
     const endOfDay = new Date(filterValue.to)

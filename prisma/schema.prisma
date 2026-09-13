@@ -27,6 +27,14 @@ enum AircraftTypeWakeTurbulenceCategory {
   J
 }
 
+enum AircraftStatus {
+  ACTIVE
+  STORED
+  RETIRED
+  SCRAPPED
+  SUPERSEDED
+}
+
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -127,6 +135,13 @@ model Aircraft {
   userId       String
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   registration String
+
+  favourite    Boolean   @default(false)
+  fictional    Boolean   @default(false)
+  msn          String?
+  lineNumber   String?
+  deliveryDate DateTime?
+  status       AircraftStatus @default(ACTIVE)
 
   aircraftTypeId String
   aircraftType   AircraftTypeReference @relation(fields: [aircraftTypeId], references: [id])

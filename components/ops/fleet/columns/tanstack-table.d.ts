@@ -5,6 +5,7 @@ declare module "@tanstack/react-table" {
     interface ColumnMeta<TData, TValue> {
         groupingOnly?: boolean
         defaultHidden?: boolean
+        isDate?: boolean
         derivedFrom?: string
         label?: string
     }

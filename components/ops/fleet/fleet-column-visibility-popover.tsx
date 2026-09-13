@@ -21,7 +21,7 @@ type HideableColumn = {
   label: string
 }
 
-const hideableColumns: HideableColumn[] = buildColumns("day")
+const hideableColumns: HideableColumn[] = buildColumns()
   .filter((column) => column.enableHiding !== false && !column.meta?.groupingOnly)
   .map((column) => {
     const id = "id" in column ? column.id! : (column as { accessorKey: string }).accessorKey

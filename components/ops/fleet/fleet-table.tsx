@@ -31,26 +31,28 @@ import { buildColumns } from "@/components/ops/fleet/columns"
 import { resolveEffectiveSorting } from "@/components/ops/fleet/columns/sort"
 import { Aircraft } from "@/components/ops/fleet/types"
 import { FleetGroupRow } from "@/components/ops/fleet/grouping/group-row"
-import { DateGranularity, findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
+import { DateGranularities, findOutermostCollapsedAncestor } from "@/components/ops/fleet/grouping/utils"
 
 const FILTERS_STORAGE_KEY = "fleet-filters"
 
 export function FleetTable({
   data,
+  hasExternalFilters = false,
   onSelectionChange,
   resetKey,
   grouping,
-  dateGranularity,
+  dateGranularities,
   columnVisibility,
   onColumnVisibilityChange,
   sorting,
   onSortingChange,
 }: {
   data: Aircraft[]
+  hasExternalFilters?: boolean
   onSelectionChange: (ids: string[]) => void
   resetKey?: number
   grouping: GroupingState
-  dateGranularity: DateGranularity
+  dateGranularities: DateGranularities
   columnVisibility: VisibilityState
   onColumnVisibilityChange: OnChangeFn<VisibilityState>
   sorting: SortingState
@@ -64,7 +66,7 @@ export function FleetTable({
   })
   const [collapsedGroupIds, setCollapsedGroupIds] = useState<Set<string>>(new Set())
 
-  const columns = useMemo(() => buildColumns(dateGranularity), [dateGranularity])
+  const columns = useMemo(() => buildColumns(dateGranularities), [dateGranularities])
 
   const effectiveSorting = useMemo(
     () => resolveEffectiveSorting(sorting, grouping, columns),
@@ -190,16 +192,18 @@ export function FleetTable({
           ) : (
             <TableRow>
               <TableCell colSpan={table.getVisibleLeafColumns().length} className="text-center text-sm text-muted-foreground">
-                {columnFilters.length > 0 ? (
+                {columnFilters.length > 0 || hasExternalFilters ? (
                   <span className="inline-flex items-center gap-2">
                     No aircraft match the active filters.
-                    <button
-                      className="inline-flex items-center gap-1 text-destructive hover:opacity-80"
-                      onClick={() => setColumnFilters([])}
-                    >
-                      <FunnelX className="size-3.5" />
-                      Clear filters
-                    </button>
+                    {columnFilters.length > 0 && (
+                      <button
+                        className="inline-flex items-center gap-1 text-destructive hover:opacity-80"
+                        onClick={() => setColumnFilters([])}
+                      >
+                        <FunnelX className="size-3.5" />
+                        Clear filters
+                      </button>
+                    )}
                   </span>
                 ) : (
                   "No aircraft in fleet."

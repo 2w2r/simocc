@@ -1,6 +1,7 @@
 import { ColumnDef, Table } from "@tanstack/react-table"
 
 import {
+  AircraftStatus,
   AircraftTypeDescription,
   AircraftTypeEngineCategory,
   AircraftTypeWakeTurbulenceCategory,
@@ -53,6 +54,31 @@ export function wakeTurbulenceDisplayRank(display: string): number {
   return wakeTurbulenceRank(display.split("/") as AircraftTypeWakeTurbulenceCategory[])
 }
 
+const STATUS_LABELS: Record<AircraftStatus, string> = {
+  ACTIVE: "Active",
+  STORED: "Stored",
+  RETIRED: "Retired",
+  SCRAPPED: "Scrapped",
+  SUPERSEDED: "Superseded",
+}
+
+export function formatAircraftStatus(value: AircraftStatus): string {
+  return STATUS_LABELS[value]
+}
+
+// Serial-style strings: numeric-aware, missing values last.
+export function compareSerials(a: string, b: string): number {
+  if (a === EMPTY_VALUE) return b === EMPTY_VALUE ? 0 : 1
+  if (b === EMPTY_VALUE) return -1
+  return a.localeCompare(b, undefined, { numeric: true })
+}
+
+export const aircraftAccessors = {
+  msn: (row: Aircraft) => row.msn ?? EMPTY_VALUE,
+  lineNumber: (row: Aircraft) => row.lineNumber ?? EMPTY_VALUE,
+  status: (row: Aircraft) => formatAircraftStatus(row.status),
+}
+
 export const aircraftTypeAccessors = {
   manufacturer: (row: Aircraft) => row.aircraftType.manufacturer,
   model: (row: Aircraft) => row.aircraftType.model,
@@ -95,14 +121,19 @@ export function getRegPrefix(registration: string): string {
   return match ? match[0] : trimmed
 }
 
-export function formatDateAdded(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0")
+const pad2 = (n: number) => String(n).padStart(2, "0")
+
+export function formatUTCDate(date: Date): string {
   const year = String(date.getUTCFullYear())
-  const month = pad(date.getUTCMonth() + 1)
-  const day = pad(date.getUTCDate())
-  const hours = pad(date.getUTCHours())
-  const minutes = pad(date.getUTCMinutes())
-  return `${year}-${month}-${day} / ${hours}:${minutes}Z`
+  const month = pad2(date.getUTCMonth() + 1)
+  const day = pad2(date.getUTCDate())
+  return `${year}-${month}-${day}`
+}
+
+export function formatDateAdded(date: Date): string {
+  const hours = pad2(date.getUTCHours())
+  const minutes = pad2(date.getUTCMinutes())
+  return `${formatUTCDate(date)} / ${hours}:${minutes}Z`
 }
 
 export function getSortMeta<T>(columnId: string, table: Table<T>) {

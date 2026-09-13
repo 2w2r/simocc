@@ -7,10 +7,22 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
-import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta, aircraftTypeAccessors, wakeTurbulenceRank, wakeTurbulenceDisplayRank } from "@/components/ops/fleet/columns/utils"
+import {
+    uniqueOrdered,
+    getRegPrefix,
+    formatDateAdded,
+    formatUTCDate,
+    getSortMeta,
+    aircraftAccessors,
+    aircraftTypeAccessors,
+    compareSerials,
+    wakeTurbulenceRank,
+    wakeTurbulenceDisplayRank,
+    EMPTY_VALUE,
+} from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
 import { dateRangeFilter, multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
-import { DateGranularity, getDateGroupingValue } from "@/components/ops/fleet/grouping/utils"
+import { DateGranularities, DateGranularity, DEFAULT_DATE_GRANULARITY, getDateGroupingValue } from "@/components/ops/fleet/grouping/utils"
 
 function createStringColumnHeader(
     label: string,
@@ -18,9 +30,15 @@ function createStringColumnHeader(
     options?: {
         operatorAccessor?: (row: Aircraft) => Aircraft["operator"]
         compareValues?: (a: string, b: string) => number
+        filterable?: boolean
     }
 ) {
+    const filterable = options?.filterable ?? true
     return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
+        if (!filterable) {
+            return <ColumnHeader label={label} column={column} {...getSortMeta(column.id, table)} />
+        }
+
         const allData = table.options.data as Aircraft[]
         const sortedData = sortAllData(allData, table.options.meta?.rawSorting ?? [])
 
@@ -64,10 +82,10 @@ function createStringColumnHeader(
     }
 }
 
-function createDateColumnHeader(label: string) {
+function createDateColumnHeader(label: string, accessor: (row: Aircraft) => Date | null) {
     return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
         const allData = table.options.data as Aircraft[]
-        const presentDates = allData.map((row) => new Date(row.createdAt))
+        const presentDates = allData.map(accessor).filter((date): date is Date => date !== null)
         const { isSorted, sortIndex, sortCount } = getSortMeta(column.id, table)
 
         return (
@@ -86,7 +104,36 @@ function createDateColumnHeader(label: string) {
 
 const regPrefixAccessor = (row: Aircraft) => getRegPrefix(row.registration)
 
-export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircraft>[] {
+function createDateColumn(
+    id: string,
+    label: string,
+    accessor: (row: Aircraft) => Date | null,
+    dateGranularity: DateGranularity,
+    options: { format: (date: Date) => string; defaultHidden?: boolean }
+): ColumnDef<Aircraft> {
+    // Missing dates sort after every real date.
+    const sortKey = (row: Aircraft) => accessor(row)?.getTime() ?? Number.POSITIVE_INFINITY
+    return {
+        id,
+        accessorFn: accessor,
+        getGroupingValue: (row) => getDateGroupingValue(accessor(row), dateGranularity),
+        filterFn: dateRangeFilter,
+        enableGrouping: true,
+        sortingFn: (rowA, rowB) => sortKey(rowA.original) - sortKey(rowB.original),
+        meta: { label, isDate: true, defaultHidden: options.defaultHidden },
+        header: createDateColumnHeader(label, accessor),
+        cell: ({ row }) => {
+            const date = accessor(row.original)
+            return date ? options.format(date) : EMPTY_VALUE
+        },
+    }
+}
+
+const createdAtAccessor = (row: Aircraft) => new Date(row.createdAt)
+const deliveryDateAccessor = (row: Aircraft) => (row.deliveryDate ? new Date(row.deliveryDate) : null)
+
+export function buildColumns(dateGranularities: DateGranularities = {}): ColumnDef<Aircraft>[] {
+    const granularityOf = (id: string) => dateGranularities[id] ?? DEFAULT_DATE_GRANULARITY
     return [
         {
             accessorKey: "registration",
@@ -189,18 +236,37 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             }),
         },
         {
-            id: "createdAt",
-            accessorFn: (row) => new Date(row.createdAt),
-            getGroupingValue: (row) => getDateGroupingValue(row, dateGranularity),
-            filterFn: dateRangeFilter,
-            enableGrouping: true,
-            sortingFn: (rowA, rowB) => {
-                return new Date(rowA.original.createdAt).getTime() - new Date(rowB.original.createdAt).getTime()
-            },
-            meta: { label: "Added" },
-            header: createDateColumnHeader("Added"),
-            cell: ({ row }) => formatDateAdded(new Date(row.original.createdAt)),
+            id: "msn",
+            accessorFn: aircraftAccessors.msn,
+            sortingFn: (rowA, rowB) =>
+                compareSerials(aircraftAccessors.msn(rowA.original), aircraftAccessors.msn(rowB.original)),
+            meta: { defaultHidden: true, label: "MSN" },
+            header: createStringColumnHeader("MSN", aircraftAccessors.msn, { filterable: false }),
         },
+        {
+            id: "lineNumber",
+            accessorFn: aircraftAccessors.lineNumber,
+            sortingFn: (rowA, rowB) =>
+                compareSerials(aircraftAccessors.lineNumber(rowA.original), aircraftAccessors.lineNumber(rowB.original)),
+            meta: { defaultHidden: true, label: "Line Number" },
+            header: createStringColumnHeader("Line Number", aircraftAccessors.lineNumber, { filterable: false }),
+        },
+        createDateColumn("deliveryDate", "Delivery Date", deliveryDateAccessor, granularityOf("deliveryDate"), {
+            format: formatUTCDate,
+            defaultHidden: true,
+        }),
+        {
+            id: "status",
+            accessorFn: aircraftAccessors.status,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "Status" },
+            header: createStringColumnHeader("Status", aircraftAccessors.status),
+        },
+        createDateColumn("createdAt", "Added", createdAtAccessor, granularityOf("createdAt"), {
+            format: formatDateAdded,
+        }),
         {
             id: "select",
             size: 0,

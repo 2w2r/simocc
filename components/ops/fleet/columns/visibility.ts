@@ -3,7 +3,7 @@ import { VisibilityState } from "@tanstack/react-table"
 import { buildColumns } from "@/components/ops/fleet/columns"
 import { getColumnId } from "@/components/ops/fleet/columns/utils"
 
-const allColumns = buildColumns("day")
+const allColumns = buildColumns()
 
 // groupingOnly columns (regPrefix) back grouping and sorting only and are never rendered.
 export const ALWAYS_HIDDEN_COLUMNS: VisibilityState = Object.fromEntries(

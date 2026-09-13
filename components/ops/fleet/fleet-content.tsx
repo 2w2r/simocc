@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { getCustomAircraftTypes, getCustomOperators, removeAircraftMany } from "@/actions/fleet"
 import { FleetForm } from "@/components/ops/fleet/fleet-form"
@@ -14,17 +14,37 @@ import { GroupingState, SortingState, Updater, VisibilityState } from "@tanstack
 import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
 import { FleetColumnVisibilityPopover } from "@/components/ops/fleet/fleet-column-visibility-popover"
 import { FleetDefaultSortPopover } from "@/components/ops/fleet/fleet-default-sort-popover"
-import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
+import { DateGranularities, DateGranularity } from "@/components/ops/fleet/grouping/utils"
 import { ALWAYS_HIDDEN_COLUMNS, DEFAULT_COLUMN_VISIBILITY } from "@/components/ops/fleet/columns/visibility"
+import {
+  applyRowFilters,
+  DEFAULT_ROW_FILTERS,
+  FleetRowFilters,
+  hasActiveRowFilters,
+  RowFilters,
+} from "@/components/ops/fleet/fleet-row-filters"
 
 const GROUPING_STORAGE_KEY = "fleet-grouping"
 const COLUMN_VISIBILITY_STORAGE_KEY = "fleet-column-visibility"
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const DEFAULT_SORT_STORAGE_KEY = "fleet-default-sort"
+const ROW_FILTERS_STORAGE_KEY = "fleet-row-filters"
 
 type PersistedGroupingState = {
   grouping: GroupingState
-  dateGranularity: DateGranularity
+  dateGranularities: DateGranularities
+}
+
+const DEFAULT_GROUPING_STATE: PersistedGroupingState = { grouping: [], dateGranularities: {} }
+
+function parsePersistedGrouping(saved: string | null): PersistedGroupingState {
+  if (!saved) return DEFAULT_GROUPING_STATE
+  const parsed = JSON.parse(saved)
+  const dateGranularities: DateGranularities =
+    typeof parsed.dateGranularity === "string"
+      ? { createdAt: parsed.dateGranularity }
+      : (parsed.dateGranularities ?? {})
+  return { grouping: parsed.grouping ?? [], dateGranularities }
 }
 
 export function FleetContent({
@@ -46,10 +66,14 @@ export function FleetContent({
   const [customAircraftTypeMode, setCustomAircraftTypeMode] = useState<"add" | "remove">("add")
   const [isCustomOperatorDialogOpen, setIsCustomOperatorDialogOpen] = useState(false)
   const [customOperatorMode, setCustomOperatorMode] = useState<"add" | "remove">("add")
-  const [{ grouping, dateGranularity }, setPersistedGrouping] = useState<PersistedGroupingState>(() => {
-    if (typeof window === "undefined") return { grouping: [], dateGranularity: "day" }
-    const saved = localStorage.getItem(GROUPING_STORAGE_KEY)
-    return saved ? JSON.parse(saved) : { grouping: [], dateGranularity: "day" }
+  const [rowFilters, setRowFilters] = useState<RowFilters>(() => {
+    if (typeof window === "undefined") return DEFAULT_ROW_FILTERS
+    const saved = localStorage.getItem(ROW_FILTERS_STORAGE_KEY)
+    return saved ? { ...DEFAULT_ROW_FILTERS, ...JSON.parse(saved) } : DEFAULT_ROW_FILTERS
+  })
+  const [{ grouping, dateGranularities }, setPersistedGrouping] = useState<PersistedGroupingState>(() => {
+    if (typeof window === "undefined") return DEFAULT_GROUPING_STATE
+    return parsePersistedGrouping(localStorage.getItem(GROUPING_STORAGE_KEY))
   })
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
@@ -61,8 +85,14 @@ export function FleetContent({
   })
 
   useEffect(() => {
-    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularity }))
-  }, [grouping, dateGranularity])
+    localStorage.setItem(GROUPING_STORAGE_KEY, JSON.stringify({ grouping, dateGranularities }))
+  }, [grouping, dateGranularities])
+
+  useEffect(() => {
+    localStorage.setItem(ROW_FILTERS_STORAGE_KEY, JSON.stringify(rowFilters))
+  }, [rowFilters])
+
+  const visibleData = useMemo(() => applyRowFilters(data, rowFilters), [data, rowFilters])
 
   const [defaultSorting, setDefaultSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return []
@@ -125,12 +155,21 @@ export function FleetContent({
     )
   }
 
+  function handleRowFiltersChange(next: RowFilters) {
+    setRowFilters(next)
+    setSelectedIds([])
+    setResetKey((k) => k + 1)
+  }
+
   function setGrouping(next: GroupingState) {
     setPersistedGrouping((prev) => ({ ...prev, grouping: next }))
   }
 
-  function setDateGranularity(next: DateGranularity) {
-    setPersistedGrouping((prev) => ({ ...prev, dateGranularity: next }))
+  function setDateGranularity(columnId: string, next: DateGranularity) {
+    setPersistedGrouping((prev) => ({
+      ...prev,
+      dateGranularities: { ...prev.dateGranularities, [columnId]: next },
+    }))
   }
 
   const selectedRegistrations = data
@@ -189,7 +228,7 @@ export function FleetContent({
         <FleetGroupSelector
           value={grouping}
           onChange={setGrouping}
-          dateGranularity={dateGranularity}
+          dateGranularities={dateGranularities}
           onDateGranularityChange={setDateGranularity}
         />
         <FleetColumnVisibilityPopover
@@ -201,15 +240,17 @@ export function FleetContent({
           onChange={handleDefaultSortingChange}
           columnVisibility={columnVisibility}
         />
+        <FleetRowFilters value={rowFilters} onChange={handleRowFiltersChange} />
       </div>
       {sorting !== null && (
         <FleetTable
-          key={dateGranularity}
-          data={data}
+          key={JSON.stringify(dateGranularities)}
+          data={visibleData}
+          hasExternalFilters={hasActiveRowFilters(rowFilters)}
           onSelectionChange={setSelectedIds}
           resetKey={resetKey}
           grouping={grouping}
-          dateGranularity={dateGranularity}
+          dateGranularities={dateGranularities}
           columnVisibility={columnVisibility}
           onColumnVisibilityChange={handleColumnVisibilityChange}
           sorting={sorting}

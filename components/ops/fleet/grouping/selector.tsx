@@ -15,30 +15,31 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { buildColumns } from "@/components/ops/fleet/columns"
-import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
+import { DateGranularities, DateGranularity, DEFAULT_DATE_GRANULARITY } from "@/components/ops/fleet/grouping/utils"
 
 type GroupableColumn = {
     id: string
     label: string
+    isDate: boolean
 }
 
-const groupableColumns: GroupableColumn[] = buildColumns("day")
+const groupableColumns: GroupableColumn[] = buildColumns()
     .filter((col) => col.enableGrouping)
     .map((col) => {
         const id = "id" in col ? col.id! : (col as { accessorKey: string }).accessorKey
-        return { id, label: col.meta?.label ?? id }
+        return { id, label: col.meta?.label ?? id, isDate: !!col.meta?.isDate }
     })
 
 export function FleetGroupSelector({
     value,
     onChange,
-    dateGranularity,
+    dateGranularities,
     onDateGranularityChange,
 }: {
     value: GroupingState
     onChange: (next: GroupingState) => void
-    dateGranularity: DateGranularity
-    onDateGranularityChange: (next: DateGranularity) => void
+    dateGranularities: DateGranularities
+    onDateGranularityChange: (columnId: string, next: DateGranularity) => void
 }) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState("")
@@ -64,10 +65,10 @@ export function FleetGroupSelector({
         onChange(next)
     }
 
-    function handleGranularityChange(next: DateGranularity) {
-        onDateGranularityChange(next)
-        if (!value.includes("createdAt")) {
-            onChange([...value, "createdAt"])
+    function handleGranularityChange(next: DateGranularity, columnId: string) {
+        onDateGranularityChange(columnId, next)
+        if (!value.includes(columnId)) {
+            onChange([...value, columnId])
         }
     }
     return (
@@ -109,7 +110,7 @@ export function FleetGroupSelector({
                     />
                 </div>
                 <div className="max-h-40 overflow-y-auto">
-                    {visibleItems.map(({ id, label }) => {
+                    {visibleItems.map(({ id, label, isDate }) => {
                         const position = value.indexOf(id)
                         const isSelected = position !== -1
                         return (
@@ -139,12 +140,12 @@ export function FleetGroupSelector({
                                         </span>
                                     )}
                                 </button>
-                                {id === "createdAt" && (
+                                {isDate && (
                                     <ToggleGroup
                                         type="single"
-                                        value={dateGranularity}
+                                        value={dateGranularities[id] ?? DEFAULT_DATE_GRANULARITY}
                                         onValueChange={(next) => {
-                                            if (next) handleGranularityChange(next as DateGranularity)
+                                            if (next) handleGranularityChange(next as DateGranularity, id)
                                         }}
                                         className="ml-auto h-5 gap-0 rounded-full border border-border bg-muted p-0.5"
                                     >
