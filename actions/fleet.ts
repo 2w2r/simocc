@@ -39,13 +39,19 @@ type RemoveCustomOperatorResult = {
 const AIRCRAFT_TYPE_RESULT_LIMIT = 20
 const AIRCRAFT_TYPE_FETCH_LIMIT = 100
 
+function scoreStringMatch(value: string, query: string): number {
+  const lowerValue = value.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  if (lowerValue === lowerQuery) return 0
+  if (lowerValue.startsWith(lowerQuery)) return 1
+  return 2
+}
+
 function scoreTypeCodeMatch(
   type: { icaoCode: string },
   upper: string
 ): number {
-  if (type.icaoCode === upper) return 0
-  if (type.icaoCode.startsWith(upper)) return 1
-  return 2
+  return scoreStringMatch(type.icaoCode, upper)
 }
 
 function scoreTypeNameMatch(
@@ -181,6 +187,51 @@ export async function removeAircraftMany(ids: string[]) {
   revalidatePath("/fleet")
 }
 
+// Reference types plus the current user's own custom types.
+function aircraftTypeScope(userId: string | undefined) {
+  return { OR: [{ userId: null }, { userId }] }
+}
+
+const AIRCRAFT_TYPE_SUGGESTION_LIMIT = 10
+
+type AircraftTypeSuggestionField = "icaoCode" | "manufacturer" | "model"
+
+export async function suggestAircraftTypeField(
+  field: AircraftTypeSuggestionField,
+  query: string,
+  context?: { manufacturer?: string }
+): Promise<string[]> {
+  const trimmed = query?.trim()
+  if (!trimmed) return []
+
+  const session = await getSession()
+
+  const rows = await prisma.aircraftTypeReference.findMany({
+    where: {
+      AND: [
+        aircraftTypeScope(session?.user.id),
+        { [field]: { contains: trimmed, mode: "insensitive" } },
+        ...(field === "model" && context?.manufacturer
+          ? [{ manufacturer: context.manufacturer }]
+          : []),
+      ],
+    },
+    distinct: [field],
+    select: { icaoCode: true, manufacturer: true, model: true },
+    orderBy: { [field]: "asc" },
+    take: AIRCRAFT_TYPE_FETCH_LIMIT,
+  })
+
+  return rows
+    .map((row) => row[field])
+    .sort(
+      (a, b) =>
+        scoreStringMatch(a, trimmed) - scoreStringMatch(b, trimmed) ||
+        a.localeCompare(b)
+    )
+    .slice(0, AIRCRAFT_TYPE_SUGGESTION_LIMIT)
+}
+
 export async function searchAircraftTypes(query: string) {
   if (!query || query.trim().length < 1) return []
 
@@ -189,9 +240,7 @@ export async function searchAircraftTypes(query: string) {
   const trimmed = query.trim()
   const upper = trimmed.toUpperCase()
   const tokens = trimmed.split(/\s+/).filter(Boolean)
-  const typeScope = {
-    OR: [{ userId: null }, { userId: session?.user.id }],
-  }
+  const typeScope = aircraftTypeScope(session?.user.id)
 
   const codeMatches = await prisma.aircraftTypeReference.findMany({
     where: {
@@ -310,7 +359,8 @@ export async function addCustomAircraftType(
     return { error: { field: "general", message: "Not authenticated." } }
 
   const icaoCode = (formData.get("icaoCode") as string)?.trim().toUpperCase()
-  const manufacturer = (formData.get("manufacturer") as string)?.trim()
+  // Reference manufacturers are uppercase; normalise so customs sort and group with them.
+  const manufacturer = (formData.get("manufacturer") as string)?.trim().toUpperCase()
   const model = (formData.get("model") as string)?.trim()
 
   if (!icaoCode || !/^[A-Z0-9]{2,4}$/.test(icaoCode))

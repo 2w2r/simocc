@@ -1,14 +1,103 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-import { addCustomAircraftType } from "@/actions/fleet"
+import { Lightbulb } from "lucide-react"
+
+import { addCustomAircraftType, suggestAircraftTypeField } from "@/actions/fleet"
 import { Button } from "@/components/ui/button"
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+} from "@/components/ui/combobox"
 import { DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { StatusMessage } from "@/components/ui/status-message"
 import { MIN_LOADING_DELAY_MS } from "@/lib/constants"
+
+type SuggestionField = "icaoCode" | "manufacturer" | "model"
+
+function useFieldSuggestions(
+    field: SuggestionField,
+    query: string,
+    context?: { manufacturer?: string }
+) {
+    const [suggestions, setSuggestions] = useState<string[]>([])
+    const manufacturer = context?.manufacturer
+
+    useEffect(() => {
+        const timeout = setTimeout(async () => {
+            const results = query.trim()
+                ? await suggestAircraftTypeField(field, query, { manufacturer })
+                : []
+            setSuggestions(results)
+        }, 200)
+        return () => clearTimeout(timeout)
+    }, [field, query, manufacturer])
+
+    return query.trim() ? suggestions : []
+}
+
+// Combobox that keeps free text and offers suggestions if text portions match.
+// On close of SuggestingField's popup, the input is reset to the selected entry's 
+// label, hindering custom typed values with no entry selection. Typed value is 
+// mirrored into `value` to compensate.
+function SuggestingField({
+    name,
+    placeholder,
+    value,
+    onChange,
+    suggestions,
+    maxLength,
+}: {
+    name: string
+    placeholder: string
+    value: string
+    onChange: (next: string) => void
+    suggestions: string[]
+    maxLength?: number
+}) {
+    const [open, setOpen] = useState(false)
+
+    return (
+        <Combobox
+            items={suggestions}
+            filter={null}
+            open={open && suggestions.length > 0}
+            onOpenChange={setOpen}
+            inputValue={value}
+            onInputValueChange={(next) => onChange(next)}
+            value={value || null}
+            onValueChange={(next) => onChange((next as string | null) ?? "")}
+        >
+            <ComboboxInput
+                name={name}
+                placeholder={placeholder}
+                maxLength={maxLength}
+                className="text-sm"
+                showTrigger={false}
+                showClear
+                required
+            />
+            <ComboboxContent>
+                <div className="flex items-center gap-1.5 px-2 pt-1.5 text-xs text-muted-foreground">
+                    <Lightbulb className="size-3" />
+                    Existing entries
+                </div>
+                <ComboboxList>
+                    {(item: string) => (
+                        <ComboboxItem key={item} value={item}>
+                            {item}
+                        </ComboboxItem>
+                    )}
+                </ComboboxList>
+            </ComboboxContent>
+        </Combobox>
+    )
+}
 
 export function AddAircraftTypeContent({
     onClose,
@@ -22,6 +111,10 @@ export function AddAircraftTypeContent({
     const [model, setModel] = useState("")
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    const icaoCodeSuggestions = useFieldSuggestions("icaoCode", icaoCode)
+    const manufacturerSuggestions = useFieldSuggestions("manufacturer", manufacturer)
+    const modelSuggestions = useFieldSuggestions("model", model, { manufacturer })
 
     const canSubmit =
         icaoCode.trim().length > 0 &&
@@ -53,27 +146,27 @@ export function AddAircraftTypeContent({
 
     return (
         <form onSubmit={handleAdd} className="space-y-3">
-            <Input
-                placeholder="ICAO Type Designator"
+            <SuggestingField
                 name="icaoCode"
+                placeholder="ICAO Type Designator"
                 value={icaoCode}
                 maxLength={4}
-                onChange={(e) => setIcaoCode(e.target.value.toUpperCase())}
-                required
+                onChange={(next) => setIcaoCode(next.toUpperCase())}
+                suggestions={icaoCodeSuggestions}
             />
-            <Input
-                placeholder="Manufacturer"
+            <SuggestingField
                 name="manufacturer"
+                placeholder="Manufacturer"
                 value={manufacturer}
-                onChange={(e) => setManufacturer(e.target.value)}
-                required
+                onChange={(next) => setManufacturer(next.toUpperCase())}
+                suggestions={manufacturerSuggestions}
             />
-            <Input
-                placeholder="Model"
+            <SuggestingField
                 name="model"
+                placeholder="Model"
                 value={model}
-                onChange={(e) => setModel(e.target.value)}
-                required
+                onChange={setModel}
+                suggestions={modelSuggestions}
             />
             {error && <StatusMessage variant="error" text={error} />}
             <DialogFooter>
