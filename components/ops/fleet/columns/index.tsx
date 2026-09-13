@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
-import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta, aircraftTypeAccessors } from "@/components/ops/fleet/columns/utils"
+import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta, aircraftTypeAccessors, wakeTurbulenceRank, wakeTurbulenceDisplayRank } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
 import { dateRangeFilter, multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
 import { DateGranularity, getDateGroupingValue } from "@/components/ops/fleet/grouping/utils"
@@ -17,6 +17,7 @@ function createStringColumnHeader(
     accessor: (row: Aircraft) => string,
     options?: {
         operatorAccessor?: (row: Aircraft) => Aircraft["operator"]
+        compareValues?: (a: string, b: string) => number
     }
 ) {
     return ({ column, table }: HeaderContext<Aircraft, unknown>) => {
@@ -38,7 +39,7 @@ function createStringColumnHeader(
 
         const allValues = operatorAccessor
             ? [...new Set(allData.map((row) => operatorDisplayKey(operatorAccessor(row))))].sort()
-            : [...new Set(allData.map(accessor))].sort()
+            : [...new Set(allData.map(accessor))].sort(options?.compareValues)
 
         const maxLength =
             allValues.length > 0
@@ -179,9 +180,13 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             accessorFn: aircraftTypeAccessors.wakeTurbulenceCategory,
             filterFn: multiSelectFilter,
             enableGrouping: true,
-            sortingFn: "text",
+            sortingFn: (rowA, rowB) =>
+                wakeTurbulenceRank(rowA.original.aircraftType.wakeTurbulenceCategory) -
+                wakeTurbulenceRank(rowB.original.aircraftType.wakeTurbulenceCategory),
             meta: { defaultHidden: true, label: "WTC" },
-            header: createStringColumnHeader("WTC", aircraftTypeAccessors.wakeTurbulenceCategory),
+            header: createStringColumnHeader("WTC", aircraftTypeAccessors.wakeTurbulenceCategory, {
+                compareValues: (a, b) => wakeTurbulenceDisplayRank(a) - wakeTurbulenceDisplayRank(b),
+            }),
         },
         {
             id: "createdAt",

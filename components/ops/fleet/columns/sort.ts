@@ -1,9 +1,9 @@
 import { ColumnDef, GroupingState, SortingState } from "@tanstack/react-table"
 
 import { Aircraft } from "@/components/ops/fleet/types"
-import { getColumnId, aircraftTypeAccessors } from "@/components/ops/fleet/columns/utils"
+import { getColumnId, aircraftTypeAccessors, wakeTurbulenceRank } from "@/components/ops/fleet/columns/utils"
 
-type SortKey = (row: Aircraft) => string
+type SortKey = (row: Aircraft) => string | number
 
 const SORT_KEY_EXTRACTORS: Record<string, SortKey> = {
   registration: (row) => row.registration,
@@ -13,6 +13,12 @@ const SORT_KEY_EXTRACTORS: Record<string, SortKey> = {
     row.operator?.icaoCode || row.operator?.iataCode
       ? (row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF")
       : "\uFFFF",
+  wakeTurbulenceCategory: (row) => wakeTurbulenceRank(row.aircraftType.wakeTurbulenceCategory),
+}
+
+function compareKeys(a: string | number, b: string | number): number {
+  if (typeof a === "number" && typeof b === "number") return a - b
+  return String(a).localeCompare(String(b))
 }
 
 export function sortAllData(
@@ -26,7 +32,7 @@ export function sortAllData(
   if (!getKey) return allData
 
   return [...allData].sort((a, b) => {
-    const comparison = getKey(a).localeCompare(getKey(b))
+    const comparison = compareKeys(getKey(a), getKey(b))
     return activeSort.desc ? -comparison : comparison
   })
 }

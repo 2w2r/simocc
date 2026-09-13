@@ -38,6 +38,21 @@ export function formatWakeTurbulenceCategory(values: AircraftTypeWakeTurbulenceC
   return values.length ? values.join("/") : EMPTY_VALUE
 }
 
+const WTC_RANK: Record<AircraftTypeWakeTurbulenceCategory, number> = { L: 0, M: 1, H: 2, J: 3 }
+const WTC_EMPTY_RANK = Object.keys(WTC_RANK).length
+
+// Compound values rank between their parts (L/M = 0.5, between L and M).
+export function wakeTurbulenceRank(values: AircraftTypeWakeTurbulenceCategory[]): number {
+  if (!values.length) return WTC_EMPTY_RANK
+  return values.reduce((sum, v) => sum + WTC_RANK[v], 0) / values.length
+}
+
+// Inverse of formatWakeTurbulenceCategory, for ordering display strings (filter options).
+export function wakeTurbulenceDisplayRank(display: string): number {
+  if (display === EMPTY_VALUE) return WTC_EMPTY_RANK
+  return wakeTurbulenceRank(display.split("/") as AircraftTypeWakeTurbulenceCategory[])
+}
+
 export const aircraftTypeAccessors = {
   manufacturer: (row: Aircraft) => row.aircraftType.manufacturer,
   model: (row: Aircraft) => row.aircraftType.model,
