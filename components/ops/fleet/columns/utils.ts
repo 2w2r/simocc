@@ -1,5 +1,53 @@
 import { ColumnDef, Table } from "@tanstack/react-table"
 
+import {
+  AircraftTypeDescription,
+  AircraftTypeEngineCategory,
+  AircraftTypeWakeTurbulenceCategory,
+} from "@/lib/generated/prisma/enums"
+import { Aircraft } from "@/components/ops/fleet/types"
+
+export const EMPTY_VALUE = "—"
+
+const AIRCRAFT_CATEGORY_LABELS: Record<AircraftTypeDescription, string> = {
+  LANDPLANE: "Landplane",
+  SEAPLANE: "Seaplane",
+  AMPHIBIAN: "Amphibian",
+  HELICOPTER: "Helicopter",
+  GYROCOPTER: "Gyrocopter",
+  TILTROTOR: "Tiltrotor",
+}
+
+const ENGINE_CATEGORY_LABELS: Record<AircraftTypeEngineCategory, string> = {
+  PISTON: "Piston",
+  TURBOPROP_TURBOSHAFT: "Turboprop/Turboshaft",
+  JET: "Jet",
+  ELECTRIC: "Electric",
+  ROCKET: "Rocket",
+}
+
+export function formatAircraftCategory(value: AircraftTypeDescription | null): string {
+  return value ? AIRCRAFT_CATEGORY_LABELS[value] : EMPTY_VALUE
+}
+
+export function formatEngineCategory(value: AircraftTypeEngineCategory | null): string {
+  return value ? ENGINE_CATEGORY_LABELS[value] : EMPTY_VALUE
+}
+
+export function formatWakeTurbulenceCategory(values: AircraftTypeWakeTurbulenceCategory[]): string {
+  return values.length ? values.join("/") : EMPTY_VALUE
+}
+
+export const aircraftTypeAccessors = {
+  manufacturer: (row: Aircraft) => row.aircraftType.manufacturer,
+  model: (row: Aircraft) => row.aircraftType.model,
+  aircraftCategory: (row: Aircraft) => formatAircraftCategory(row.aircraftType.description),
+  engineCategory: (row: Aircraft) => formatEngineCategory(row.aircraftType.engineCategory),
+  engineCount: (row: Aircraft) => row.aircraftType.engineCount ?? EMPTY_VALUE,
+  wakeTurbulenceCategory: (row: Aircraft) =>
+    formatWakeTurbulenceCategory(row.aircraftType.wakeTurbulenceCategory),
+}
+
 export function uniqueOrdered<T>(
   items: T[],
   keyOf: (item: T) => string

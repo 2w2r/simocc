@@ -1,13 +1,14 @@
 import { ColumnDef, GroupingState, SortingState } from "@tanstack/react-table"
 
 import { Aircraft } from "@/components/ops/fleet/types"
-import { getColumnId } from "@/components/ops/fleet/columns/utils"
+import { getColumnId, aircraftTypeAccessors } from "@/components/ops/fleet/columns/utils"
 
 type SortKey = (row: Aircraft) => string
 
 const SORT_KEY_EXTRACTORS: Record<string, SortKey> = {
   registration: (row) => row.registration,
   aircraftTypeIcaoCode: (row) => row.aircraftType.icaoCode,
+  ...aircraftTypeAccessors,
   operator: (row) =>
     row.operator?.icaoCode || row.operator?.iataCode
       ? (row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF")

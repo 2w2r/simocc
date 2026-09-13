@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { Aircraft } from "@/components/ops/fleet/types"
 import { sortAllData } from "@/components/ops/fleet/columns/sort"
-import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta } from "@/components/ops/fleet/columns/utils"
+import { uniqueOrdered, getRegPrefix, formatDateAdded, getSortMeta, aircraftTypeAccessors } from "@/components/ops/fleet/columns/utils"
 import { ColumnHeader } from "@/components/ops/fleet/columns/header"
 import { dateRangeFilter, multiSelectFilter, operatorFilter, regPrefixFilter } from "@/components/ops/fleet/columns/filters"
 import { DateGranularity, getDateGroupingValue } from "@/components/ops/fleet/grouping/utils"
@@ -103,15 +103,6 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
             meta: { groupingOnly: true, derivedFrom: "registration", label: "Registration Prefix" },
         },
         {
-            id: "aircraftTypeIcaoCode",
-            accessorFn: (row) => row.aircraftType.icaoCode,
-            filterFn: multiSelectFilter,
-            enableGrouping: true,
-            sortingFn: "text",
-            meta: { label: "Type" },
-            header: createStringColumnHeader("Type", (row) => row.aircraftType.icaoCode),
-        },
-        {
             id: "operator",
             accessorFn: (row) =>
                 row.operator.icaoCode ?? row.operator.iataCode ?? "\uFFFF",
@@ -135,6 +126,62 @@ export function buildColumns(dateGranularity: DateGranularity): ColumnDef<Aircra
                     </span>
                 )
             },
+        },
+        {
+            id: "aircraftTypeIcaoCode",
+            accessorFn: (row) => row.aircraftType.icaoCode,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { label: "ICAO Type" },
+            header: createStringColumnHeader("ICAO Type", (row) => row.aircraftType.icaoCode),
+        },
+        {
+            id: "manufacturer",
+            accessorFn: aircraftTypeAccessors.manufacturer,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "Manufacturer" },
+            header: createStringColumnHeader("Manufacturer", aircraftTypeAccessors.manufacturer),
+        },
+        //Aircraft model column omitted due unfriendly naming e.g. A-350-900 XWB instead of common A350-900
+        //Consider as hidden column on implementation of aircraft type name e.g. A350-941 if required for e.g. grouping
+        {
+            id: "aircraftCategory",
+            accessorFn: aircraftTypeAccessors.aircraftCategory,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "Aircraft Category" },
+            header: createStringColumnHeader("Aircraft Category", aircraftTypeAccessors.aircraftCategory),
+        },
+        {
+            id: "engineCategory",
+            accessorFn: aircraftTypeAccessors.engineCategory,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "Engine Category" },
+            header: createStringColumnHeader("Engine Category", aircraftTypeAccessors.engineCategory),
+        },
+        {
+            id: "engineCount",
+            accessorFn: aircraftTypeAccessors.engineCount,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "Engine Count" },
+            header: createStringColumnHeader("Engine Count", aircraftTypeAccessors.engineCount),
+        },
+        {
+            id: "wakeTurbulenceCategory",
+            accessorFn: aircraftTypeAccessors.wakeTurbulenceCategory,
+            filterFn: multiSelectFilter,
+            enableGrouping: true,
+            sortingFn: "text",
+            meta: { defaultHidden: true, label: "WTC" },
+            header: createStringColumnHeader("WTC", aircraftTypeAccessors.wakeTurbulenceCategory),
         },
         {
             id: "createdAt",

@@ -15,14 +15,12 @@ import { FleetGroupSelector } from "@/components/ops/fleet/grouping/selector"
 import { FleetColumnVisibilityPopover } from "@/components/ops/fleet/fleet-column-visibility-popover"
 import { FleetDefaultSortPopover } from "@/components/ops/fleet/fleet-default-sort-popover"
 import { DateGranularity } from "@/components/ops/fleet/grouping/utils"
+import { ALWAYS_HIDDEN_COLUMNS, DEFAULT_COLUMN_VISIBILITY } from "@/components/ops/fleet/columns/visibility"
 
 const GROUPING_STORAGE_KEY = "fleet-grouping"
 const COLUMN_VISIBILITY_STORAGE_KEY = "fleet-column-visibility"
 const SORTING_STORAGE_KEY = "fleet-sorting"
 const DEFAULT_SORT_STORAGE_KEY = "fleet-default-sort"
-
-// regPrefix backs registration-prefix grouping and sorting only and is never rendered.
-const ALWAYS_HIDDEN_COLUMNS: VisibilityState = { regPrefix: false }
 
 type PersistedGroupingState = {
   grouping: GroupingState
@@ -55,11 +53,11 @@ export function FleetContent({
   })
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
-    if (typeof window === "undefined") return ALWAYS_HIDDEN_COLUMNS
+    if (typeof window === "undefined") return DEFAULT_COLUMN_VISIBILITY
     const saved = localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY)
     return saved
-      ? { ...JSON.parse(saved), ...ALWAYS_HIDDEN_COLUMNS }
-      : ALWAYS_HIDDEN_COLUMNS
+      ? { ...DEFAULT_COLUMN_VISIBILITY, ...JSON.parse(saved), ...ALWAYS_HIDDEN_COLUMNS }
+      : DEFAULT_COLUMN_VISIBILITY
   })
 
   useEffect(() => {

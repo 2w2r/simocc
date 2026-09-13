@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 
-import { Check, Columns3, Eye, EyeOff, RotateCcw } from "lucide-react"
+import { Check, Columns3, RotateCcw } from "lucide-react"
 import { VisibilityState } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { buildColumns } from "@/components/ops/fleet/columns"
+import { DEFAULT_COLUMN_VISIBILITY } from "@/components/ops/fleet/columns/visibility"
 
 type HideableColumn = {
   id: string
@@ -37,7 +38,9 @@ export function FleetColumnVisibilityPopover({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
 
-  const hasHiddenColumns = hideableColumns.some(({ id }) => value[id] === false)
+  const isDefaultVisibility = hideableColumns.every(
+    ({ id }) => (value[id] === false) === (DEFAULT_COLUMN_VISIBILITY[id] === false)
+  )
 
   const visibleItems = useMemo(() => {
     if (!search.trim()) return hideableColumns
@@ -47,10 +50,8 @@ export function FleetColumnVisibilityPopover({
     )
   }, [search])
 
-  function showAllColumns() {
-    const next = { ...value }
-    for (const { id } of hideableColumns) delete next[id]
-    onChange(next)
+  function resetToDefault() {
+    onChange({ ...DEFAULT_COLUMN_VISIBILITY })
   }
 
   function toggleColumn(id: string) {
@@ -69,22 +70,22 @@ export function FleetColumnVisibilityPopover({
         <Button
           variant="ghost"
           size="icon"
-          className={cn("size-7", hasHiddenColumns && "text-primary")}
+          className={cn("size-7", !isDefaultVisibility && "text-primary")}
         >
-          <Columns3 className={cn("size-3.5", !hasHiddenColumns && "opacity-40")} />
+          <Columns3 className={cn("size-3.5", isDefaultVisibility && "opacity-40")} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-fit min-w-0 p-1" align="start">
         <div className="flex items-center gap-2 px-2 pt-1 pb-0.5">
-          <Eye
+          <RotateCcw
             className={cn(
               "size-3.5 shrink-0 cursor-pointer transition-colors",
-              hasHiddenColumns
-                ? "text-primary"
-                : "text-muted-foreground opacity-40"
+              isDefaultVisibility
+                ? "text-muted-foreground opacity-40"
+                : "text-primary"
             )}
             onClick={() => {
-              showAllColumns()
+              resetToDefault()
               setOpen(false)
             }}
           />
