@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { ColumnDef, HeaderContext } from "@tanstack/react-table"
 
 import { Checkbox } from "@/components/ui/checkbox"
@@ -142,6 +143,11 @@ export function buildColumns(dateGranularities: DateGranularities = {}): ColumnD
             enableHiding: false,
             meta: { label: "Registration" },
             header: createStringColumnHeader("Registration", (row) => getRegPrefix(row.registration)),
+            cell: ({ row }) => (
+                <Link href={`/fleet/${row.original.id}`} className="hover:underline underline-offset-4">
+                    {row.original.registration}
+                </Link>
+            ),
         },
         {
             id: "regPrefix",

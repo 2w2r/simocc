@@ -16,9 +16,10 @@ export function OpsBreadcrumb() {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
   const isSettings = segments[0] === "settings"
+  const isFleetAircraft = segments[0] === "fleet" && segments.length > 1
 
   const label = segments[segments.length - 1]
-  const pageLabel = label.charAt(0).toUpperCase() + label.slice(1)
+  const pageLabel = isFleetAircraft ? "Aircraft" : label.charAt(0).toUpperCase() + label.slice(1)
 
   return (
     <Breadcrumb>
@@ -31,6 +32,14 @@ export function OpsBreadcrumb() {
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem className="hidden md:block">
               <BreadcrumbLink href="/settings">Settings</BreadcrumbLink>
+            </BreadcrumbItem>
+          </>
+        )}
+        {isFleetAircraft && (
+          <>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="/fleet">Fleet</BreadcrumbLink>
             </BreadcrumbItem>
           </>
         )}
