@@ -126,13 +126,13 @@ export async function getFleetAircraft(): Promise<Aircraft[]> {
   }))
 }
 
-export async function getFleetAircraftById(aircraftId: string) {
+export async function getFleetAircraftById(aircraftId: string): Promise<Aircraft | null> {
   const session = await getSession()
   if (!session) return null
 
   return prisma.aircraft.findFirst({
     where: { id: aircraftId, userId: session.user.id },
-    select: { id: true, registration: true },
+    include: { aircraftType: true, operator: true },
   })
 }
 
