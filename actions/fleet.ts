@@ -6,6 +6,7 @@ import { getSession } from "@/lib/get-session"
 import prisma from "@/lib/prisma"
 import {
   Aircraft,
+  AircraftTypeSupplement,
   aircraftQueryArgs,
   customAircraftTypeQueryArgs,
   CustomAircraftType,
@@ -134,6 +135,10 @@ export async function getFleetAircraftById(aircraftId: string): Promise<Aircraft
     where: { id: aircraftId, userId: session.user.id },
     include: { aircraftType: true, operator: true },
   })
+}
+
+export async function getAircraftTypeSupplement(icaoCode: string): Promise<AircraftTypeSupplement | null> {
+  return prisma.aircraftTypeSupplement.findUnique({ where: { icaoCode } })
 }
 
 export async function addAircraft(

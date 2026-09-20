@@ -35,6 +35,36 @@ export function formatEngineCategory(value: AircraftTypeEngineCategory | null): 
   return value ? ENGINE_CATEGORY_LABELS[value] : EMPTY_VALUE
 }
 
+const AIRCRAFT_CATEGORY_CODES: Record<AircraftTypeDescription, string> = {
+  LANDPLANE: "L",
+  SEAPLANE: "S",
+  AMPHIBIAN: "A",
+  HELICOPTER: "H",
+  GYROCOPTER: "G",
+  TILTROTOR: "T",
+}
+
+const ENGINE_CATEGORY_CODES: Record<AircraftTypeEngineCategory, string> = {
+  PISTON: "P",
+  TURBOPROP_TURBOSHAFT: "T",
+  JET: "J",
+  ELECTRIC: "E",
+  ROCKET: "R",
+}
+
+export function formatTypeCode(
+  description: AircraftTypeDescription | null,
+  engineCount: string | null,
+  engineCategory: AircraftTypeEngineCategory | null
+): string {
+  if (!description || !engineCount || !engineCategory) return EMPTY_VALUE
+  return `${AIRCRAFT_CATEGORY_CODES[description]}${engineCount}${ENGINE_CATEGORY_CODES[engineCategory]}`
+}
+
+export function formatAerodromeReferenceCode(number: number | null, letter: string | null): string {
+  return number !== null && letter ? `${number}${letter}` : EMPTY_VALUE
+}
+
 export function formatWakeTurbulenceCategory(values: AircraftTypeWakeTurbulenceCategory[]): string {
   return values.length ? values.join("/") : EMPTY_VALUE
 }

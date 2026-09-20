@@ -1,4 +1,9 @@
-import { Prisma, AircraftTypeReference, OperatorReference } from "@/lib/generated/prisma/client"
+import {
+  Prisma,
+  AircraftTypeReference,
+  AircraftTypeSupplement as PrismaAircraftTypeSupplement,
+  OperatorReference,
+} from "@/lib/generated/prisma/client"
 
 export const aircraftQueryArgs = {
   include: { aircraftType: true },
@@ -7,6 +12,8 @@ export const aircraftQueryArgs = {
 type AircraftWithType = Prisma.AircraftGetPayload<typeof aircraftQueryArgs>
 
 export type AircraftType = AircraftTypeReference
+
+export type AircraftTypeSupplement = PrismaAircraftTypeSupplement
 
 export type Operator = OperatorReference
 

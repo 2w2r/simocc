@@ -175,3 +175,11 @@ model AircraftTypeReference {
   @@unique([manufacturer, model, icaoCode])
   @@index([icaoCode])
 }
+
+model AircraftTypeSupplement {
+  icaoCode                     String    @id
+  aerodromeReferenceCodeNumber Int?
+  aerodromeReferenceCodeLetter String?
+  rescueFireFightingCategory   Int?
+  updatedAt                    DateTime  @updatedAt
+}
