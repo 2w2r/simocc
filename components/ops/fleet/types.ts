@@ -1,5 +1,6 @@
 import {
   Prisma,
+  AircraftFlightPlanFields as PrismaAircraftFlightPlanFields,
   AircraftTypeReference,
   AircraftTypeSupplement as PrismaAircraftTypeSupplement,
   OperatorReference,
@@ -18,6 +19,8 @@ export type AircraftTypeSupplement = PrismaAircraftTypeSupplement
 export type Operator = OperatorReference
 
 export type Aircraft = AircraftWithType & { operator: Operator }
+
+export type AircraftFlightPlanFields = PrismaAircraftFlightPlanFields
 
 export const customAircraftTypeQueryArgs = {
   select: {

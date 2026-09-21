@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 
-import { getAircraftTypeSupplement, getFleetAircraftById } from "@/actions/fleet"
+import { getAircraftFlightPlanFields, getAircraftTypeSupplement, getFleetAircraftById } from "@/actions/fleet"
 import { AircraftContent } from "@/components/ops/fleet/aircraft/aircraft-content"
 import { getSimbriefAirframes } from "@/lib/simbrief-airframes"
 
@@ -10,10 +10,18 @@ export default async function AircraftPage({ params }: { params: Promise<{ aircr
   if (!aircraft) notFound()
 
   const { icaoCode } = aircraft.aircraftType
-  const [simbrief, supplement] = await Promise.all([
+  const [simbrief, supplement, flightPlanFields] = await Promise.all([
     getSimbriefAirframes(icaoCode),
     getAircraftTypeSupplement(icaoCode),
+    getAircraftFlightPlanFields(aircraft.id),
   ])
 
-  return <AircraftContent aircraft={aircraft} supplement={supplement} simbrief={simbrief} />
+  return (
+    <AircraftContent
+      aircraft={aircraft}
+      supplement={supplement}
+      flightPlanFields={flightPlanFields}
+      simbrief={simbrief}
+    />
+  )
 }

@@ -151,6 +151,8 @@ model Aircraft {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  flightPlanFields AircraftFlightPlanFields?
+
   @@unique([userId, registration, operatorId, aircraftTypeId])
 }
 
@@ -182,4 +184,27 @@ model AircraftTypeSupplement {
   aerodromeReferenceCodeLetter String?
   rescueFireFightingCategory   Int?
   updatedAt                    DateTime  @updatedAt
+}
+
+model AircraftFlightPlanFields {
+  aircraftId String   @id
+  aircraft   Aircraft @relation(fields: [aircraftId], references: [id])
+
+  // Item 10
+  item10a String?  // equipment and capability
+  item10b String?  // surveillance
+
+  // Item 18
+  pbn  String? // performance based navigation capability
+  nav  String? // navigation equipment (non-Item 10a, non-PBN)
+  com  String? // communications applications or capabilities (non-Item 10a)
+  dat  String? // data applications or capabilities (non-Item 10a)
+  sur  String? // surveillance applications or capabilities (non-Item 10b)
+  sel  String? // selective calling system (SELCAL) code
+  code String? // six hexadecimal character alphanumeric code aircraft address
+  per  String? // performance (approach speed category)
+  rmk  Json?   // RemarkEntry[] (remark array)
+  rvr  String? // runway visual range
+
+  updatedAt DateTime @updatedAt
 }
