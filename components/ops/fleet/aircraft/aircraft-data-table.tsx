@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 
+import { AircraftHeroImage } from "@/components/ops/fleet/aircraft/aircraft-hero-image"
 import { RemarkRow } from "@/components/ops/fleet/aircraft/remark-list"
 import {
   EMPTY_VALUE,
@@ -22,6 +23,8 @@ function buildRows(aircraft: Aircraft, supplement: AircraftTypeSupplement | null
   return [
     // Aircraft
     ["Registration", aircraft.registration],
+    ["Aircraft Name", aircraft.aircraftTypeName ?? EMPTY_VALUE],
+    ["Engine Name", aircraft.engineTypeName ?? EMPTY_VALUE],
     ["Favourite", yesNo(aircraft.favourite)],
     ["Fictional", yesNo(aircraft.fictional)],
     ["MSN", aircraftAccessors.msn(aircraft)],
@@ -113,6 +116,9 @@ export function AircraftDataTable({
 }) {
   return (
     <div className="w-lg max-w-full overflow-hidden rounded-md border">
+      <div className="border-b">
+        <AircraftHeroImage imageUrl={aircraft.imageUrl} alt={aircraft.registration} />
+      </div>
       <Table className="table-fixed">
         <TableBody>
           {buildRows(aircraft, supplement).map(([label, value]) => (

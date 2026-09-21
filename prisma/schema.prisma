@@ -135,6 +135,8 @@ model Aircraft {
   userId       String
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   registration String
+  aircraftTypeName     String?
+  engineTypeName   String?
 
   favourite    Boolean   @default(false)
   fictional    Boolean   @default(false)
@@ -142,6 +144,8 @@ model Aircraft {
   lineNumber   String?
   deliveryDate DateTime?
   status       AircraftStatus @default(ACTIVE)
+  imageUrl     String?
+
 
   aircraftTypeId String
   aircraftType   AircraftTypeReference @relation(fields: [aircraftTypeId], references: [id])
