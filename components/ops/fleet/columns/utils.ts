@@ -1,4 +1,5 @@
 import { ColumnDef, Table } from "@tanstack/react-table"
+import { differenceInDays, formatDistanceStrict } from "date-fns"
 
 import {
   AircraftStatus,
@@ -52,7 +53,7 @@ const ENGINE_CATEGORY_CODES: Record<AircraftTypeEngineCategory, string> = {
   ROCKET: "R",
 }
 
-export function formatTypeCode(
+export function formatTypeDescription(
   description: AircraftTypeDescription | null,
   engineCount: string | null,
   engineCategory: AircraftTypeEngineCategory | null
@@ -160,10 +161,43 @@ export function formatUTCDate(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
+// "14:05Z"
+function formatUTCTime(date: Date): string {
+  return `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}Z`
+}
+
 export function formatDateAdded(date: Date): string {
-  const hours = pad2(date.getUTCHours())
-  const minutes = pad2(date.getUTCMinutes())
-  return `${formatUTCDate(date)} / ${hours}:${minutes}Z`
+  return `${formatUTCDate(date)} / ${formatUTCTime(date)}`
+}
+
+// Display date: "2 April 2008". Tables: formatUTCDate.
+const DISPLAY_DATE = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+})
+
+export function formatDisplayDate(date: Date): string {
+  return DISPLAY_DATE.format(date)
+}
+
+// "2 April 2008, 14:05Z"
+export function formatDisplayDateTime(date: Date): string {
+  return `${formatDisplayDate(date)}, ${formatUTCTime(date)}`
+}
+
+const DAYS_PER_YEAR = 365.25
+
+// Age since delivery, one decimal ("12.4 yrs"). Future delivery: null (no age yet).
+export function formatAircraftAge(deliveryDate: Date, now = new Date()): string | null {
+  const years = differenceInDays(now, deliveryDate) / DAYS_PER_YEAR
+  return years < 0 ? null : `${years.toFixed(1)} yrs`
+}
+
+// "3 days ago"
+export function formatTimeSince(date: Date, now = new Date()): string {
+  return formatDistanceStrict(date, now, { addSuffix: true })
 }
 
 export function getSortMeta<T>(columnId: string, table: Table<T>) {

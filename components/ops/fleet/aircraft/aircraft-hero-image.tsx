@@ -2,7 +2,7 @@ import Image from "next/image"
 
 import { Image as ImageIcon } from "lucide-react"
 
-// 16:9 hero above the Details rows, centred crop. No URL = muted icon placeholder.
+// 16:9 hero above the Identity rows, centred crop. No URL = muted icon placeholder.
 // `unoptimized`: imageUrl is user-entered; optimiser would be open resize
 // proxy for any host. Browser loads origin directly.
 export function AircraftHeroImage({ imageUrl, alt }: { imageUrl: string | null; alt: string }) {
