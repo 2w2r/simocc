@@ -138,8 +138,18 @@ export async function getFleetAircraftById(aircraftId: string): Promise<Aircraft
   })
 }
 
+// User override first, else global row (userId null).
+async function findEffectiveSupplement(icaoCode: string, userId: string | undefined) {
+  return prisma.aircraftTypeSupplement.findFirst({
+    where: { icaoCode, OR: [{ userId: null }, ...(userId ? [{ userId }] : [])] },
+    orderBy: { userId: { sort: "asc", nulls: "last" } },
+  })
+}
+
 export async function getAircraftTypeSupplement(icaoCode: string): Promise<AircraftTypeSupplement | null> {
-  return prisma.aircraftTypeSupplement.findUnique({ where: { icaoCode } })
+  if (typeof icaoCode !== "string") return null
+  const session = await getSession()
+  return findEffectiveSupplement(icaoCode, session?.user.id)
 }
 
 export async function getAircraftFlightPlanFields(aircraftId: string): Promise<AircraftFlightPlanFields | null> {

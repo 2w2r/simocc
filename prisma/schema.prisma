@@ -58,6 +58,7 @@ model User {
   operatorReferences OperatorReference[]
   aircraft Aircraft[]
   aircraftTypeReferences AircraftTypeReference[]
+  aircraftTypeSupplements AircraftTypeSupplement[]
 
   @@unique([email])
   @@map("user")
@@ -145,6 +146,8 @@ model Aircraft {
   deliveryDate DateTime?
   status       AircraftStatus @default(ACTIVE)
   imageUrl     String?
+  imagePageUrl String?
+  imageAuthor  String?
 
 
   aircraftTypeId String
@@ -183,16 +186,21 @@ model AircraftTypeReference {
 }
 
 model AircraftTypeSupplement {
-  icaoCode                     String    @id
+  id                           String   @id @default(cuid())
+  userId                       String?
+  user                         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  icaoCode                     String
   aerodromeReferenceCodeNumber Int?
   aerodromeReferenceCodeLetter String?
   rescueFireFightingCategory   Int?
-  updatedAt                    DateTime  @updatedAt
+  updatedAt                    DateTime @updatedAt
+
+  @@unique([userId, icaoCode])
 }
 
 model AircraftFlightPlanFields {
   aircraftId String   @id
-  aircraft   Aircraft @relation(fields: [aircraftId], references: [id])
+  aircraft   Aircraft @relation(fields: [aircraftId], references: [id], onDelete: Cascade)
 
   // Item 10
   item10a String?  // equipment and capability
