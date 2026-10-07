@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { addCustomOperator } from "@/actions/fleet"
+import type { Operator } from "@/components/ops/fleet/types"
 import { Button } from "@/components/ui/button"
 import { DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -11,13 +12,17 @@ import { StatusMessage } from "@/components/ui/status-message"
 import { MIN_LOADING_DELAY_MS } from "@/lib/constants"
 
 export function AddOperatorContent({
+    initialText = "",
     onClose,
     onSuccess,
 }: {
+    initialText?: string
     onClose: () => void
-    onSuccess?: () => void
+    onSuccess?: (operator: Operator) => void
 }) {
-    const [name, setName] = useState("")
+    const initialIcao = /^[A-Z]{3}$/.test(initialText) ? initialText : undefined
+    const initialIata = /^(?=.*[A-Z])[A-Z0-9]{2}$/.test(initialText) ? initialText : undefined
+    const [name, setName] = useState(initialIcao || initialIata ? "" : initialText)
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -30,13 +35,13 @@ export function AddOperatorContent({
         const minDelay = new Promise((resolve) => setTimeout(resolve, MIN_LOADING_DELAY_MS))
         const [result] = await Promise.all([addCustomOperator(formData), minDelay])
 
-        if (result?.error) {
+        if (result.error) {
             setError(result.error.message)
         } else {
             setName("")
             setError(null)
             onClose()
-            onSuccess?.()
+            onSuccess?.(result.operator)
         }
 
         setSubmitting(false)
@@ -56,6 +61,7 @@ export function AddOperatorContent({
                     placeholder="ICAO"
                     name="icaoCode"
                     maxLength={3}
+                    defaultValue={initialIcao}
                     className="w-1/2"
                     onChange={(e) => (e.target.value = e.target.value.toUpperCase())}
                 />
@@ -63,6 +69,7 @@ export function AddOperatorContent({
                     placeholder="IATA"
                     name="iataCode"
                     maxLength={2}
+                    defaultValue={initialIata}
                     className="w-1/2"
                     onChange={(e) => (e.target.value = e.target.value.toUpperCase())}
                 />

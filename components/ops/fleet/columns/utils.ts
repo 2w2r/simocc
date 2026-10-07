@@ -196,8 +196,19 @@ export function formatAircraftAge(deliveryDate: Date, now = new Date()): string 
 }
 
 // "3 days ago"
+// "mo" keeps months apart from minutes ("m").
+const TIME_UNIT_ABBREVIATIONS: Record<string, string> = {
+  second: "s",
+  minute: "m",
+  hour: "h",
+  day: "d",
+  month: "mo",
+  year: "y",
+}
+
 export function formatTimeSince(date: Date, now = new Date()): string {
-  return formatDistanceStrict(date, now, { addSuffix: true })
+  const [count, unit] = formatDistanceStrict(date, now).split(" ")
+  return `${count}${TIME_UNIT_ABBREVIATIONS[unit.replace(/s$/, "")] ?? unit} ago`
 }
 
 export function getSortMeta<T>(columnId: string, table: Table<T>) {

@@ -6,7 +6,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { AddAircraftTypeContent } from "./add-content"
+import { AddAircraftTypeContent, keepOpenOnSuggestionClick } from "./add-content"
 import { RemoveAircraftTypeContent } from "./remove-content"
 import { CustomAircraftType } from "@/components/ops/fleet/types"
 
@@ -25,7 +25,7 @@ export function FleetCustomAircraftTypeDialog({
 }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent onInteractOutside={keepOpenOnSuggestionClick}>
                 <DialogHeader>
                     <DialogTitle>
                         {mode === "add" ? "Add" : "Remove"} custom aircraft type{mode === "add" ? "" : "s"}?

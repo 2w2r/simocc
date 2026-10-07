@@ -5,6 +5,8 @@ import {
   AircraftTypeSupplement as PrismaAircraftTypeSupplement,
   OperatorReference,
 } from "@/lib/generated/prisma/client"
+import type { AircraftStatus } from "@/lib/generated/prisma/enums"
+import type { RemarkEntry } from "@/components/ops/fleet/flight-plan-remarks"
 
 export const aircraftQueryArgs = {
   include: { aircraftType: true },
@@ -21,6 +23,30 @@ export type Operator = OperatorReference
 export type Aircraft = AircraftWithType & { operator: Operator }
 
 export type AircraftFlightPlanFields = PrismaAircraftFlightPlanFields
+
+export type SupplementValues = Pick<
+  AircraftTypeSupplement,
+  "aerodromeReferenceCodeNumber" | "aerodromeReferenceCodeLetter" | "rescueFireFightingCategory"
+>
+
+export type FlightPlanTextField = Exclude<keyof AircraftFlightPlanFields, "aircraftId" | "rmk" | "updatedAt">
+
+export type AircraftDetailsInput = {
+  registration: string
+  operatorId: string
+  aircraftTypeId: string
+  aircraftTypeName: string | null
+  engineTypeName: string | null
+  msn: string | null
+  lineNumber: string | null
+  deliveryDate: Date | null
+  status: AircraftStatus
+  imageUrl: string | null
+  imagePageUrl: string | null
+  imageAuthor: string | null
+  supplement: SupplementValues
+  flightPlanFields: Record<FlightPlanTextField, string | null> & { rmk: RemarkEntry[] }
+}
 
 export const customAircraftTypeQueryArgs = {
   select: {
